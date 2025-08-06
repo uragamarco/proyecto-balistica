@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_SERVER_AUTHN_CREDENTIALS=admin:admin
+      - CHROMA_SERVER_AUTHN_PROVIDER=token
+    volumes:
+      - chroma_data:/chroma/chroma
+
+  proyecto-balistica:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - chromadb
+    environment:
+      - CHROMA_URL=http://chromadb:8000
+    volumes:
+      - .:/app
+
+volumes:
+  chroma_data:
