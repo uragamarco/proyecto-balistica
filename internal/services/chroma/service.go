@@ -3,44 +3,38 @@ package chroma
 import (
 	"context"
 	"fmt"
+	"time"
 
-	chromago "github.com/amikos-tech/chroma-go"
-	"github.com/amikos-tech/chroma-go/types"
+	"github.com/amikos-tech/chroma-go"
 	"gocv.io/x/gocv"
 )
 
+type Service struct {
+	collection *chroma.Collection
+}
+
 var (
-	client     chromago.Client
-	collection chromago.Collection
+	cache = make(map[string][]MatchResult)
 )
 
-func Init(url, collectionName string) error {
-	var err error
-	client, err = chromago.NewClient(chroma.WithBasePath(url))
+func New(chromaURL, collectionName string) (*Service, error) {
+	client, err := chroma.NewClient(chroma.WithBasePath(chromaURL))
 	if err != nil {
-		return fmt.Errorf("error creating Chroma client: %w", err)
+		return nil, err
 	}
 
-	collection, err = client.GetOrCreateCollection(
+	collection, err := client.GetOrCreateCollection(
 		context.Background(),
 		collectionName,
 		nil,
-		types.L2,
+		chroma.L2,
 	)
-	return err
+	return &Service{collection}, err
 }
 
-func StoreDescriptors(imageID string, desc gocv.Mat) error {
-	embeddings := make([][]float32, desc.Rows())
-	for i := 0; i < desc.Rows(); i++ {
-		vec := make([]float32, desc.Cols())
-		for j := 0; j < desc.Cols(); j++ {
-			vec[j] = desc.GetFloatAt(i, j)
-		}
-		embeddings[i] = vec
-	}
-
-	_, err := collection.Add(
+func (s *Service) StoreDescriptors(imageID string, desc gocv.Mat) error {
+	embeddings := matToEmbeddings(desc)
+	_, err := s.collection.Add(
 		context.Background(),
 		embeddings,
 		[]map[string]interface{}{{"source_image": imageID}},
@@ -50,39 +44,27 @@ func StoreDescriptors(imageID string, desc gocv.Mat) error {
 	return err
 }
 
-func QuerySimilar(queryDesc gocv.Mat, topK int) ([]map[string]interface{}, error) {
-	queryEmbeddings := make([][]float32, queryDesc.Rows())
-	for i := 0; i < queryDesc.Rows(); i++ {
-		vec := make([]float32, queryDesc.Cols())
-		for j := 0; j < queryDesc.Cols(); j++ {
-			vec[j] = queryDesc.GetFloatAt(i, j)
-		}
-		queryEmbeddings[i] = vec
+func (s *Service) QuerySimilar(desc gocv.Mat, topK int) ([]MatchResult, error) {
+	cacheKey := fmt.Sprintf("%x", desc.ToBytes())
+	if results, ok := cache[cacheKey]; ok {
+		return results, nil
 	}
 
-	results, err := collection.Query(
+	results, err := s.collection.Query(
 		context.Background(),
-		queryEmbeddings,
+		matToEmbeddings(desc),
 		topK,
 		nil,
 		nil,
-		[]types.QueryEnum{"metadatas", "distances"},
+		[]chroma.QueryEnum{"metadatas", "distances"},
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	var matches []map[string]interface{}
-	for i := range results.Distances {
-		matches = append(matches, map[string]interface{}{
-			"image":    results.Metadatas[i][0]["source_image"],
-			"distance": results.Distances[i][0],
-			"score":    1 - results.Distances[i][0],
-		})
-	}
-	return matches, nil
+	// Almacenar en cache
+	cache[cacheKey] = convertResults(results)
+	return cache[cacheKey], nil
 }
 
-func GetService() *chromago.Collection {
-	return &collection
-}
+// Helpers...
