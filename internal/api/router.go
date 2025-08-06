@@ -1,16 +1,12 @@
 package api
 
-import (
-	"net/http"
-)
+import "net/http"
 
-func NewRouter() *http.ServeMux {
+func NewRouter(handlers *Handlers) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// Configuración de endpoints
-	mux.HandleFunc("/api/upload", uploadHandler)
-	mux.HandleFunc("/api/login", loginHandler)
+	mux.HandleFunc("/api/process", handlers.ProcessImage)
+	mux.HandleFunc("/api/compare", handlers.CompareSamples)
 
-	// Puedes agregar middlewares aquí si lo necesitas
 	return mux
 }

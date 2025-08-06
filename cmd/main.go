@@ -7,27 +7,44 @@ import (
 	"github.com/uragamarco/proyecto-balistica/internal/api"
 	"github.com/uragamarco/proyecto-balistica/internal/config"
 	"github.com/uragamarco/proyecto-balistica/internal/services/chroma"
+	"github.com/uragamarco/proyecto-balistica/internal/services/image_processor"
 )
 
 func main() {
-	// Cargar configuración
-	cfg, err := config.Load()
+	// Load configuration
+	cfg, err := config.LoadConfig("./configs/default.yml")
 	if err != nil {
-		log.Fatalf("Error cargando configuración: %v", err)
+		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	// Inicializar ChromaDB
-	err = chroma.Init(cfg.ChromaURL, cfg.CollectionName)
-	if err != nil {
-		log.Fatalf("Error inicializando ChromaDB: %v", err)
+	// Initialize services
+	imgProcCfg := &image_processor.Config{
+		Contrast:      cfg.Imaging.Contrast,
+		SharpenSigma:  cfg.Imaging.SharpenSigma,
+		SharpenAmount: cfg.Imaging.SharpenAmount,
+		EdgeThreshold: cfg.Imaging.EdgeThreshold,
 	}
 
-	// Configurar rutas
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/upload", api.UploadHandler)
-	mux.Handle("/", http.FileServer(http.Dir("./static")) 
+	imgProcessor := image_processor.NewImageProcessor(imgProcCfg)
 
-	// Iniciar servidor
-	log.Printf("Servidor iniciado en %s", cfg.ServerAddress)
-	log.Fatal(http.ListenAndServe(cfg.ServerAddress, mux))
+	chromaCfg := &chroma.Config{
+		ColorThreshold: cfg.Chroma.ColorThreshold,
+		SampleSize:     cfg.Chroma.SampleSize,
+	}
+
+	chromaSvc := chroma.NewService(chromaCfg)
+
+	// Initialize API handlers
+	handlers := api.NewHandlers(imgProcessor, chromaSvc)
+
+	// Create and start server
+	server := &http.Server{
+		Addr:    cfg.Server.Address,
+		Handler: api.NewRouter(handlers),
+	}
+
+	log.Printf("Starting server on %s", cfg.Server.Address)
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("Server failed: %v", err)
+	}
 }
