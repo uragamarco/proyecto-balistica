@@ -1,0 +1,32 @@
+]633;E;echo "=== go build ===";60783360-4227-42ea-9f51-aacb78458e40]633;C=== go build ===
+# github.com/uragamarco/proyecto-balistica/internal/api
+internal/api/handlers.go:11:2: chroma redeclared in this block
+	internal/api/handlers.go:10:2: other declaration of chroma
+internal/api/handlers.go:11:2: "github.com/uragamarco/proyecto-balistica/internal/services/image_processor" imported as chroma and not used
+internal/api/handlers.go:15:18: undefined: image_processor
+internal/api/handlers.go:19:22: undefined: image_processor
+\n=== go vet ===
+# github.com/uragamarco/proyecto-balistica/internal/api
+internal/api/handlers.go:11:2: chroma redeclared in this block
+	internal/api/handlers.go:10:2: other declaration of chroma
+internal/api/handlers.go:11:2: "github.com/uragamarco/proyecto-balistica/internal/services/image_processor" imported as chroma and not used
+internal/api/handlers.go:15:18: undefined: image_processor
+internal/api/handlers.go:19:22: undefined: image_processor
+\n=== staticcheck ===
+-: # github.com/uragamarco/proyecto-balistica/internal/api
+internal/api/handlers.go:11:2: chroma redeclared in this block
+	internal/api/handlers.go:10:2: other declaration of chroma
+internal/api/handlers.go:11:2: "github.com/uragamarco/proyecto-balistica/internal/services/image_processor" imported as chroma and not used
+internal/api/handlers.go:15:18: undefined: image_processor
+internal/api/handlers.go:19:22: undefined: image_processor (compile)
+\n=== shadow ===
+# github.com/uragamarco/proyecto-balistica/internal/api
+internal/api/handlers.go:11:2: chroma redeclared in this block
+	internal/api/handlers.go:10:2: other declaration of chroma
+internal/api/handlers.go:11:2: "github.com/uragamarco/proyecto-balistica/internal/services/image_processor" imported as chroma and not used
+internal/api/handlers.go:15:18: undefined: image_processor
+internal/api/handlers.go:19:22: undefined: image_processor
+\n=== errcheck ===
+error: failed to check packages: errors while loading package github.com/uragamarco/proyecto-balistica/internal/models: [/home/marco/proyecto-balistica/internal/models/ballistic.go:1:1: package requires newer Go version go1.23]
+\n=== govulncheck ===
+2025/08/06 20:17:49 internal error: package "golang.org/x/sys/unix" without types was imported from "github.com/mattn/go-isatty"

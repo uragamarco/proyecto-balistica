@@ -1,0 +1,65 @@
+internal/api/handlers.go:1  typecheck  : # github.com/uragamarco/proyecto-balistica/internal/api
+internal/api/handlers.go:11:2: chroma redeclared in this block
+  internal/api/handlers.go:10:2: other declaration of chroma
+internal/api/handlers.go:11:2: "github.com/uragamarco/proyecto-balistica/internal/services/image_processor" imported as chroma and not used
+internal/api/handlers.go:15:18: undefined: image_processor
+internal/api/handlers.go:19:22: undefined: image_processor
+cmd/main.go:7:2  typecheck  could not import github.com/uragamarco/proyecto-balistica/internal/api (-: # github.com/uragamarco/proyecto-balistica/internal/api
+internal/api/handlers.go:11:2: chroma redeclared in this block
+  internal/api/handlers.go:10:2: other declaration of chroma
+internal/api/handlers.go:11:2: "github.com/uragamarco/proyecto-balistica/internal/services/image_processor" imported as chroma and not used
+internal/api/handlers.go:15:18: undefined: image_processor
+internal/api/handlers.go:19:22: undefined: image_processor)
+internal/app/app.go:12:2  typecheck  could not import github.com/uragamarco/proyecto-balistica/internal/api (-: # github.com/uragamarco/proyecto-balistica/internal/api
+internal/api/handlers.go:11:2: chroma redeclared in this block
+  internal/api/handlers.go:10:2: other declaration of chroma
+internal/api/handlers.go:11:2: "github.com/uragamarco/proyecto-balistica/internal/services/image_processor" imported as chroma and not used
+internal/api/handlers.go:15:18: undefined: image_processor
+internal/api/handlers.go:19:22: undefined: image_processor)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/runtime/mfixalloc.go:60:9         typecheck  undefined: max
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/runtime/mgcmark.go:1427:7         typecheck  undefined: min
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/runtime/mgcpacer.go:1146:15       typecheck  undefined: max
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/runtime/mgcpacer.go:1156:12       typecheck  undefined: max
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/runtime/mgcpacer.go:1157:12       typecheck  undefined: min
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/runtime/mgcscavenge.go:954:10     typecheck  undefined: min
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/runtime/time.go:189:17            typecheck  cannot range over 3 (untyped int constant)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/io/pipe.go:22:4                   typecheck  a.Lock undefined (type *onceError has no field or method Lock)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/io/pipe.go:23:10                  typecheck  a.Unlock undefined (type *onceError has no field or method Unlock)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/io/pipe.go:30:4                   typecheck  a.Lock undefined (type *onceError has no field or method Lock)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/io/pipe.go:31:10                  typecheck  a.Unlock undefined (type *onceError has no field or method Unlock)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:168:31    typecheck  e.Bytes undefined (type *encodeState has no field or method Bytes)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:428:4     typecheck  e.WriteString undefined (type *encodeState has no field or method WriteString)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:433:5     typecheck  e.WriteString undefined (type *encodeState has no field or method WriteString)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:438:5     typecheck  e.WriteString undefined (type *encodeState has no field or method WriteString)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:443:5     typecheck  e.Grow undefined (type *encodeState has no field or method Grow)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:444:12    typecheck  e.AvailableBuffer undefined (type *encodeState has no field or method AvailableBuffer)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:462:5     typecheck  e.Grow undefined (type *encodeState has no field or method Grow)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:463:12    typecheck  e.AvailableBuffer undefined (type *encodeState has no field or method AvailableBuffer)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:486:4     typecheck  e.Write undefined (type *encodeState has no field or method Write)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:500:4     typecheck  e.Write undefined (type *encodeState has no field or method Write)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:504:9     typecheck  e.AvailableBuffer undefined (type *encodeState has no field or method AvailableBuffer)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:508:4     typecheck  e.Write undefined (type *encodeState has no field or method Write)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:707:5     typecheck  e.WriteByte undefined (type *encodeState has no field or method WriteByte)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:720:5     typecheck  e.WriteByte undefined (type *encodeState has no field or method WriteByte)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/encode.go:748:4     typecheck  e.WriteByte undefined (type *encodeState has no field or method WriteByte)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/encoding/json/stream.go:223:9     typecheck  e.Bytes undefined (type *encodeState has no field or method Bytes)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/reflect/iter.go:76:19             typecheck  cannot range over v.Len() (value of type int)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/reflect/iter.go:84:19             typecheck  cannot range over v.Len() (value of type int)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/reflect/iter.go:140:19            typecheck  cannot range over v.Len() (value of type int)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/reflect/type.go:2320:19           typecheck  cannot range over num (variable of type int)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/internal/fmtsort/sort.go:136:1    typecheck  missing return
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/syscall/syscall_unix.go:66:4      typecheck  m.Lock undefined (type *mmapper has no field or method Lock)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/syscall/syscall_unix.go:67:10     typecheck  m.Unlock undefined (type *mmapper has no field or method Unlock)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/syscall/syscall_unix.go:79:4      typecheck  m.Lock undefined (type *mmapper has no field or method Lock)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/syscall/syscall_unix.go:80:10     typecheck  m.Unlock undefined (type *mmapper has no field or method Unlock)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/net/http/fs.go:691:10             typecheck  f.Close undefined (type File has no field or method Close)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/net/http/fs.go:734:13             typecheck  ff.Close undefined (type File has no field or method Close)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/net/http/fs.go:1000:20            typecheck  missing type in composite literal
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/net/http/fs.go:1001:20            typecheck  missing type in composite literal
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/net/http/h2_bundle.go:3764:15     typecheck  p.b.Read undefined (type http2pipeBuffer has no field or method Read)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/net/http/h2_bundle.go:3801:13     typecheck  p.b.Write undefined (type http2pipeBuffer has no field or method Write)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/net/http/pattern.go:382:1         typecheck  missing return
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/net/http/server.go:2210:1         typecheck  missing return
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/compress/flate/inflate.go:697:16  typecheck  f.r.ReadByte undefined (type Reader has no field or method ReadByte)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/compress/flate/inflate.go:720:18  typecheck  f.r.ReadByte undefined (type Reader has no field or method ReadByte)
+../go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.11.linux-amd64/src/math/big/intconv.go:220:21        typecheck  r.ReadRune undefined (type byteReader has no field or method ReadRune)
