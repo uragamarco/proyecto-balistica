@@ -11,6 +11,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/uragamarco/proyecto-balistica/internal/api"
 	"github.com/uragamarco/proyecto-balistica/internal/config"
+	"github.com/uragamarco/proyecto-balistica/internal/services/chroma"
+	"github.com/uragamarco/proyecto-balistica/internal/services/image_processor"
 )
 
 type Application struct {
@@ -19,14 +21,17 @@ type Application struct {
 	config *config.Config
 }
 
-func New(cfg *config.Config) (*Application, error) {
+func New(cfg *config.Config, imgProcessor *image_processor.ImageProcessor, chromaSvc *chroma.Service) (*Application, error) {
 	app := &Application{
 		config: cfg,
 		logger: zerolog.New(os.Stdout).With().Timestamp().Logger(),
 	}
 
-	// Configurar el enrutador
-	router := api.NewRouter()
+	// Inicializar handlers
+	handlers := api.NewHandlers(imgProcessor, chromaSvc)
+
+	// Configurar el enrutador con los handlers
+	router := api.NewRouter(handlers)
 
 	app.server = &http.Server{
 		Addr:         cfg.Server.Address,

@@ -2,52 +2,271 @@ package image_processor
 
 import (
 	"image"
-	
-	"gocv.io/x/gocv"
+	"image/color"
+	"math"
+
+	"github.com/disintegration/imaging"
 )
 
-type Processor struct {
-	orb   *gocv.ORB
-	clahe *gocv.CLAHE
+// ImageProcessor provee funcionalidades para procesamiento de imágenes balísticas
+type ImageProcessor struct {
+	config *Config
 }
 
-func New() *Processor {
-	return &Processor{
-		orb:   gocv.NewORBWithParams(500, 1.2, 8, 31, 0, 2, gocv.ORBScoreHarris, 31),
-		clahe: gocv.NewCLAHEWithParams(2.0, image.Pt(8, 8)),
+// Config contiene parámetros de procesamiento de imágenes
+type Config struct {
+	Contrast               float64
+	SharpenSigma           float64
+	EdgeThreshold          int
+	GLCMOffsetDistance     int     // Distancia para cálculo de GLCM (1-3 píxeles)
+	ForegroundThreshold    uint8   // Umbral para detección de objeto (ej: 128)
+	EdgeDetectionThreshold float64 // Sensibilidad para bordes
+}
+
+// NewImageProcessor crea una nueva instancia del procesador de imágenes
+func NewImageProcessor(cfg *Config) *ImageProcessor {
+	return &ImageProcessor{
+		config: cfg,
 	}
 }
 
-func (p *Processor) Process(img gocv.Mat) ([]gocv.KeyPoint, gocv.Mat, error) {
-	// 1. Mejorar contraste
-	enhanced := p.enhanceContrast(img)
-	defer enhanced.Close()
+// Process aplica transformaciones a la imagen para análisis balístico
+func (ip *ImageProcessor) Process(img image.Image) (image.Image, error) {
+	// 1. Convertir a escala de grises
+	grayImg := imaging.Grayscale(img)
 
-	// 2. Extraer características
-	kp, desc := p.orb.DetectAndCompute(enhanced, gocv.NewMat())
-	if len(kp) == 0 {
-		return nil, gocv.Mat{}, fmt.Errorf("no se detectaron características")
+	// 2. Ajustar contraste
+	contrastImg := imaging.AdjustContrast(grayImg, ip.config.Contrast)
+
+	// 3. Enfocar imagen
+	sharpenedImg := imaging.Sharpen(contrastImg, ip.config.SharpenSigma)
+
+	// 4. Detección de bordes
+	edges := ip.detectEdges(sharpenedImg)
+
+	return edges, nil
+}
+
+// ExtractFeatures extrae características balísticas de la imagen procesada
+func (ip *ImageProcessor) ExtractFeatures(img image.Image) ([]float64, error) {
+	features := make([]float64, 0)
+
+	// 1. Características de textura (GLCM)
+	glcmFeatures := ip.calculateGLCMFeatures(img)
+	features = append(features, glcmFeatures...)
+
+	// 2. Características de forma
+	shapeFeatures := ip.calculateShapeFeatures(img)
+	features = append(features, shapeFeatures...)
+
+	return features, nil
+}
+
+// detectEdges implementa detección de bordes usando operador Sobel
+func (ip *ImageProcessor) detectEdges(img image.Image) image.Image {
+	bounds := img.Bounds()
+	edgeImg := image.NewGray(bounds)
+
+	for y := bounds.Min.Y + 1; y < bounds.Max.Y-1; y++ {
+		for x := bounds.Min.X + 1; x < bounds.Max.X-1; x++ {
+			gx, gy := ip.sobelOperator(img, x, y)
+			magnitude := math.Sqrt(float64(gx*gx + gy*gy))
+
+			if magnitude > float64(ip.config.EdgeThreshold) {
+				edgeImg.SetGray(x, y, color.Gray{Y: 255})
+			} else {
+				edgeImg.SetGray(x, y, color.Gray{Y: 0})
+			}
+		}
 	}
 
-	// 3. Normalizar descriptores
-	return kp, p.normalize(desc), nil
+	return edgeImg
 }
 
-func (p *Processor) enhanceContrast(img gocv.Mat) gocv.Mat {
-	lab := gocv.NewMat()
-	defer lab.Close()
-	
-	gocv.CvtColor(img, &lab, gocv.ColorBGRToLab)
-	channels := gocv.Split(lab)
-	p.clahe.Apply(channels[0], &channels[0])
-	gocv.Merge(channels, &lab)
-	gocv.CvtColor(lab, &img, gocv.ColorLabToBGR)
-	
-	return img
+// sobelOperator aplica el operador Sobel para detección de bordes
+func (ip *ImageProcessor) sobelOperator(img image.Image, x, y int) (int, int) {
+	var gx, gy int
+
+	kernelX := [3][3]int{{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}}
+	kernelY := [3][3]int{{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}}
+
+	for ky := -1; ky <= 1; ky++ {
+		for kx := -1; kx <= 1; kx++ {
+			r, _, _, _ := img.At(x+kx, y+ky).RGBA()
+			gray := int(r >> 8)
+			gx += gray * kernelX[ky+1][kx+1]
+			gy += gray * kernelY[ky+1][kx+1]
+		}
+	}
+
+	return gx, gy
 }
 
-func (p *Processor) normalize(desc gocv.Mat) gocv.Mat {
-	normalized := gocv.NewMat()
-	gocv.Normalize(desc, &normalized, 1.0, 0.0, gocv.NormL2)
-	return normalized
+//-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+
+// getGrayValue convierte un pixel a valor de gris (0-255)
+func getGrayValue(c color.Color) uint8 {
+	r, g, b, _ := c.RGBA()
+	// Fórmula estándar para conversión RGB a escala de grises
+	gray := 0.299*float64(r>>8) + 0.587*float64(g>>8) + 0.114*float64(b>>8)
+	return uint8(gray)
+}
+
+// calculateContrast calcula el contraste desde la GLCM
+func calculateContrast(glcm map[[2]uint8]int) float64 {
+	var contrast float64
+	for pair, count := range glcm {
+		diff := int(pair[0]) - int(pair[1])
+		contrast += float64(count) * float64(diff*diff)
+	}
+	return contrast / float64(sumGLCM(glcm))
+}
+
+// calculateEnergy calcula la energía desde la GLCM
+func calculateEnergy(glcm map[[2]uint8]int) float64 {
+	var energy float64
+	total := sumGLCM(glcm)
+	for _, count := range glcm {
+		prob := float64(count) / float64(total)
+		energy += prob * prob
+	}
+	return energy
+}
+
+// calculateHomogeneity calcula la homogeneidad desde la GLCM
+func calculateHomogeneity(glcm map[[2]uint8]int) float64 {
+	var homogeneity float64
+	total := sumGLCM(glcm)
+	for pair, count := range glcm {
+		diff := int(pair[0]) - int(pair[1])
+		homogeneity += float64(count) / (1.0 + float64(diff*diff))
+	}
+	return homogeneity / float64(total)
+}
+
+// sumGLCM suma todos los valores de la GLCM
+func sumGLCM(glcm map[[2]uint8]int) int {
+	total := 0
+	for _, count := range glcm {
+		total += count
+	}
+	return total
+}
+
+// calculateGLCMFeatures calcula características de textura usando matriz de co-ocurrencia
+func (ip *ImageProcessor) calculateGLCMFeatures(img image.Image) []float64 {
+	bounds := img.Bounds()
+	glcm := make(map[[2]uint8]int)                            // Matriz de co-ocurrencia
+	offsets := []image.Point{{0, 1}, {1, 0}, {1, 1}, {1, -1}} // Vecindarios
+
+	// 1. Calcular GLCM
+	for y := bounds.Min.Y; y < bounds.Max.Y-1; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X-1; x++ {
+			pixel1 := getGrayValue(img.At(x, y))
+			for _, offset := range offsets {
+				pixel2 := getGrayValue(img.At(x+offset.X, y+offset.Y))
+				glcm[[2]uint8{pixel1, pixel2}]++ // Incrementar co-ocurrencias
+			}
+		}
+	}
+
+	// 2. Extraer características (ejemplo simplificado)
+	contrast := calculateContrast(glcm)
+	energy := calculateEnergy(glcm)
+	homogeneity := calculateHomogeneity(glcm)
+
+	return []float64{contrast, energy, homogeneity}
+}
+
+//-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+
+// isForeground determina si un pixel es parte del objeto balístico
+func isForeground(c color.Color) bool {
+	// Umbral para considerar un pixel como parte del objeto
+	gray := getGrayValue(c)
+	return gray < 128 // Ajustar según necesidad
+}
+
+// isEdgePixel determina si un pixel es borde del objeto
+func isEdgePixel(img image.Image, x, y int) bool {
+	if !isForeground(img.At(x, y)) {
+		return false
+	}
+
+	// Verificar vecinos (4-connectivity)
+	neighbors := []image.Point{
+		{0, 1}, {1, 0}, {0, -1}, {-1, 0},
+	}
+
+	for _, n := range neighbors {
+		if !isForeground(img.At(x+n.X, y+n.Y)) {
+			return true
+		}
+	}
+	return false
+}
+
+// calculateAspectRatio calcula la relación de aspecto del objeto
+func calculateAspectRatio(img image.Image) float64 {
+	bounds := img.Bounds()
+	var (
+		minX = bounds.Max.X
+		maxX = bounds.Min.X
+		minY = bounds.Max.Y
+		maxY = bounds.Min.Y
+	)
+
+	// Encontrar los límites reales del objeto
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			if isForeground(img.At(x, y)) {
+				if x < minX {
+					minX = x
+				}
+				if x > maxX {
+					maxX = x
+				}
+				if y < minY {
+					minY = y
+				}
+				if y > maxY {
+					maxY = y
+				}
+			}
+		}
+	}
+
+	width := maxX - minX
+	height := maxY - minY
+
+	if height == 0 {
+		return 0
+	}
+	return float64(width) / float64(height)
+}
+
+// calculateShapeFeatures extrae características geométricas relevantes
+func (ip *ImageProcessor) calculateShapeFeatures(img image.Image) []float64 {
+	bounds := img.Bounds()
+	var area, perimeter float64
+
+	// 1. Detección de contornos y cálculo de área/perímetro
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			if isForeground(img.At(x, y)) {
+				area++
+				if isEdgePixel(img, x, y) {
+					perimeter++
+				}
+			}
+		}
+	}
+
+	// 2. Calcular métricas de forma
+	circularity := (4 * math.Pi * area) / (perimeter * perimeter)
+	aspectRatio := calculateAspectRatio(img)
+
+	return []float64{circularity, aspectRatio}
 }
