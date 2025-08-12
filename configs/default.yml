@@ -5,6 +5,7 @@ imaging:
   edge_threshold: 50
   resolution_dpi: 300
   temp_dir: "/tmp/balistica"
+  temp_dir: "/tmp/balistica" # Directorio para archivos temporales
 
 chroma:
   color_threshold: 0.05

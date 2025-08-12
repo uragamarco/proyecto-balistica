@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"log"
 	"math"
 	"os"
 	"path/filepath"
@@ -24,10 +25,11 @@ type Config struct {
 	Contrast               float64
 	SharpenSigma           float64
 	EdgeThreshold          int
-	GLCMOffsetDistance     int     // Distancia para cálculo de GLCM (1-3 píxeles)
-	ForegroundThreshold    uint8   // Umbral para detección de objeto (ej: 128)
-	EdgeDetectionThreshold float64 // Sensibilidad para bordes
-	TempDir                string  // Directorio para archivos temporales
+	GLCMOffsetDistance     int         // Distancia para cálculo de GLCM (1-3 píxeles)
+	ForegroundThreshold    uint8       // Umbral para detección de objeto (ej: 128)
+	EdgeDetectionThreshold float64     // Sensibilidad para bordes
+	TempDir                string      // Directorio para archivos temporales
+	Logger                 *log.Logger // Logger para registrar eventos
 }
 
 // NewImageProcessor crea una nueva instancia del procesador de imágenes
@@ -324,4 +326,17 @@ func (ip *ImageProcessor) calculateShapeFeatures(img image.Image) []float64 {
 	aspectRatio := calculateAspectRatio(img)
 
 	return []float64{circularity, aspectRatio}
+}
+
+func (ip *ImageProcessor) PythonFeaturesStatus() (bool, string) {
+	if ip.pythonFeatures == nil {
+		return false, "Python integration disabled"
+	}
+
+	err := ip.pythonFeatures.HealthCheck()
+	if err != nil {
+		return false, "Python error: " + err.Error()
+	}
+
+	return true, "Python integration active"
 }

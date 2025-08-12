@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/uragamarco/proyecto-balistica/internal/api"
 	"github.com/uragamarco/proyecto-balistica/internal/config"
@@ -32,6 +33,8 @@ func main() {
 		SharpenSigma:  cfg.Imaging.SharpenSigma,
 		EdgeThreshold: cfg.Imaging.EdgeThreshold,
 		PythonBridge:  pyBridge, // Inyectamos el bridge
+		TempDir:       cfg.Imaging.TempDir,
+		Logger:        log.New(os.Stdout, "IMG_PROC: ", log.LstdFlags),
 	}
 
 	imgProcessor := image_processor.NewImageProcessor(imgProcCfg)
