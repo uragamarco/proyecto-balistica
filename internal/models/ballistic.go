@@ -69,3 +69,10 @@ type DatabaseRecord struct {
 	CreatedAt   string        `json:"created_at"`
 	LastUpdated string        `json:"last_updated"`
 }
+
+func (c RGB) RGBA() (r, g, b, a uint32) {
+    return uint32(c.R)<<8 | uint32(c.R)<<0, 
+           uint32(c.G)<<8 | uint32(c.G)<<0,
+           uint32(c.B)<<8 | uint32(c.B)<<0,
+           0xFFFF
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Balística</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Análisis de Imágenes Balísticas</h1>
+        
+        <div class="upload-box">
+            <input type="file" id="imageInput" accept="image/*">
+            <label for="imageInput">Seleccionar imagen</label>
+            <button id="analyzeBtn">Analizar</button>
+        </div>
+
+        <div class="results">
+            <h2>Resultados:</h2>
+            <div class="result-item">
+                <h3>Características:</h3>
+                <div id="features"></div>
+            </div>
+            <div class="result-item">
+                <h3>Imagen Procesada:</h3>
+                <img id="processedImage" style="max-width: 300px;">
+            </div>
+        </div>
+    </div>
+
+    <script src="demo.js"></script>
+</body>
+</html>

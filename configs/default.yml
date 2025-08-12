@@ -4,6 +4,7 @@ imaging:
   sharpen_amount: 1.5
   edge_threshold: 50
   resolution_dpi: 300
+  temp_dir: "/tmp/balistica"
 
 chroma:
   color_threshold: 0.05
@@ -15,3 +16,8 @@ server:
     read: 5s
     write: 10s
     idle: 15s
+
+python:
+  enabled: true
+  script_path: "py_services/feature_extractor.py"
+  virtual_env: "balistics-env"

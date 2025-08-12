@@ -8,6 +8,8 @@ import (
 	"github.com/uragamarco/proyecto-balistica/internal/config"
 	"github.com/uragamarco/proyecto-balistica/internal/services/chroma"
 	"github.com/uragamarco/proyecto-balistica/internal/services/image_processor"
+	"github.com/uragamarco/proyecto-balistica/internal/services/python_features" // Nuevo paquete
+	"github.com/uragamarco/proyecto-balistica/pkg/integration"                   // Paquete del bridge
 )
 
 func main() {
@@ -17,12 +19,19 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
+	// Initialize Python integration
+	pyBridge := integration.NewRPCExtractor()
+	if err := pyBridge.HealthCheck(); err != nil {
+		log.Printf("WARNING: Python features disabled - %v", err)
+		pyBridge = nil // Permite operación sin Python
+	}
+
 	// Initialize services
 	imgProcCfg := &image_processor.Config{
 		Contrast:      cfg.Imaging.Contrast,
 		SharpenSigma:  cfg.Imaging.SharpenSigma,
-		SharpenAmount: cfg.Imaging.SharpenAmount,
 		EdgeThreshold: cfg.Imaging.EdgeThreshold,
+		PythonBridge:  pyBridge, // Inyectamos el bridge
 	}
 
 	imgProcessor := image_processor.NewImageProcessor(imgProcCfg)
@@ -34,8 +43,11 @@ func main() {
 
 	chromaSvc := chroma.NewService(chromaCfg)
 
+	// Initialize feature extraction service
+	featureSvc := python_features.NewService(pyBridge) // Opcional si Python está disponible
+
 	// Initialize API handlers
-	handlers := api.NewHandlers(imgProcessor, chromaSvc)
+	handlers := api.NewHandlers(imgProcessor, chromaSvc, featureSvc)
 
 	// Create and start server
 	server := &http.Server{

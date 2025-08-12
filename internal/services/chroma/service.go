@@ -20,14 +20,19 @@ type ChromaAnalysis struct {
 }
 
 type ColorData struct {
-	Color     RGB
+	Color     color.Color // Interface estándar
 	Frequency float64
 }
 
 type RGB struct {
-	R uint8
-	G uint8
-	B uint8
+	R, G, B uint8
+}
+
+func (c RGB) RGBA() (r, g, b, a uint32) {
+	return uint32(c.R)<<8 | uint32(c.R)<<0,
+		uint32(c.G)<<8 | uint32(c.G)<<0,
+		uint32(c.B)<<8 | uint32(c.B)<<0,
+		0xFFFF
 }
 
 func NewService(cfg *Config) *Service {
@@ -94,12 +99,11 @@ func (s *Service) calculateDominantColors(colors []color.Color) []ColorData {
 		freq := float64(count) / float64(len(colors))
 		if freq > s.config.ColorThreshold {
 			dominant = append(dominant, ColorData{
-				Color:     clr,
+				Color:     clr, // Ahora válido porque RGB implementa color.Color
 				Frequency: freq,
 			})
 		}
 	}
-
 	return dominant
 }
 
