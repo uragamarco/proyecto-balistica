@@ -45,14 +45,20 @@
 │   │   │   └── 7bd8529f4c98b2dc260091f7971ccd4c4cccf2
 │   │   ├── 0c
 │   │   │   └── a501e1d7d5b3d1cc8479e8f664a86a17cce658
+│   │   ├── 12
+│   │   │   └── a988fb1bf06ba43adac9103337d43140edf1ab
 │   │   ├── 15
 │   │   │   └── 2ede2dbae1b805477a43dbc3142a94a442bc75
+│   │   ├── 16
+│   │   │   └── 6f5389641536a37c32b1e4b3b6775efb84c24c
 │   │   ├── 23
 │   │   │   └── 046ee1388923e3c214c4b912a9b239ff52d673
 │   │   ├── 2a
 │   │   │   └── 02e637c9b7319e7197cee9d3c28efe5f922a7b
 │   │   ├── 2d
 │   │   │   └── c40ad22ba8b5a9642893ad29e7170ac1317d13
+│   │   ├── 2e
+│   │   │   └── 6dd508b635aabf289d1de05c473dc4f6a9542d
 │   │   ├── 2f
 │   │   │   └── ccaa6e38ad1e38f5e9c19a5ebdba34e7ba663f
 │   │   ├── 35
@@ -64,19 +70,32 @@
 │   │   │   └── 7be17b86db32c04a2dc0ae05e0963ce8bfdeb1
 │   │   ├── 3f
 │   │   │   └── c0b3d5b60d1668da07b23432d43d2ad26d1ca5
+│   │   ├── 43
+│   │   │   └── 243b9cc897d19f60c568754326935f14a34734
+│   │   ├── 48
+│   │   │   └── 3ebf4077ccfed20ebfd841b202206814d7884f
 │   │   ├── 52
 │   │   │   └── 98a390699c236e6072312cb86379aff249179b
+│   │   ├── 57
+│   │   │   └── e987fc1c2a8b1115f2e108fdcf720c11b50d45
 │   │   ├── 59
 │   │   │   └── ae07116459168659d3843d9084a6dbd0369f5d
 │   │   ├── 66
-│   │   │   └── 1ab64558832c16ac1490038ba130f963f2198e
+│   │   │   ├── 1ab64558832c16ac1490038ba130f963f2198e
+│   │   │   └── e3a9d933d1c2340d9a809448985c752777bb00
+│   │   ├── 67
+│   │   │   └── 6daffb7a45708248ced70447c066180511c5d1
 │   │   ├── 68
 │   │   │   └── 8ebf03302dec2cbcb40e3b21311ee52e682a4f
+│   │   ├── 6f
+│   │   │   └── d85beadd7d37d402ddd0809a961f2cd9097288
 │   │   ├── 73
 │   │   │   └── 2a9f4732d41aeb0504638b66f5e05c8873c689
 │   │   ├── 79
-│   │   │   └── 00e68f63011f72b6182d1f299e785a810f3bc2
+│   │   │   ├── 00e68f63011f72b6182d1f299e785a810f3bc2
+│   │   │   └── d6e2c15f40877439bcd21e86d867eba005f85f
 │   │   ├── 7c
+│   │   │   ├── 2735dc8df055bb5d988984a9a10a9aca91be18
 │   │   │   └── 6f46498ecdb02f5c972726d0331df5ea04872f
 │   │   ├── 7e
 │   │   │   └── 9a3d0e1a6849dbf2a5eff6bc1113c4308fa027
@@ -86,8 +105,11 @@
 │   │   │   └── 65add74236f3799b40434aaca5ce720f2c1a43
 │   │   ├── 82
 │   │   │   └── f1499c79627299efc77fd6997f7ff5283a6079
+│   │   ├── 84
+│   │   │   └── f61f2889c66bf67599c510df1ab93801852202
 │   │   ├── 88
-│   │   │   └── 6ace8becd2c0161e126d4080f7293990cace19
+│   │   │   ├── 6ace8becd2c0161e126d4080f7293990cace19
+│   │   │   └── dedcdfcc1d42bb006bc4b9462a1bb7f50ac385
 │   │   ├── 8a
 │   │   │   └── 453e86864ca593a174dc26f76920c0584e2eca
 │   │   ├── 8e
@@ -100,17 +122,26 @@
 │   │   │   └── 26857c4a9096fe309426384072b2556858f691
 │   │   ├── 95
 │   │   │   └── bdc6cb5cf0799872f924a93d8e5eef6f719406
+│   │   ├── 96
+│   │   │   └── 4f99b7a940201233b5115332e52634d71d423d
 │   │   ├── 98
 │   │   │   ├── 1e35f400afbf68d2d29b776f81ad0250f2cebf
-│   │   │   └── 2f60b0e2e2f09edb769d32597e6b5bc6d646e6
+│   │   │   ├── 2f60b0e2e2f09edb769d32597e6b5bc6d646e6
+│   │   │   └── e7be7e2446ffe7358fc863da172a9b23c376b4
 │   │   ├── 9d
 │   │   │   └── c2142efa058d1a28cec2899092fe278fe915f7
 │   │   ├── 9f
 │   │   │   └── 1d617d88bac4b0d053abf439255c909cfc3645
+│   │   ├── a6
+│   │   │   └── 2450a88bd57e9591f912134fa5789a8fd264a9
 │   │   ├── b0
 │   │   │   └── 1fb3bfacb52302cf113fd60773f9000f152462
+│   │   ├── b2
+│   │   │   └── 166b96afe6b7c2af241cacdbdd2fe0438f5c66
 │   │   ├── b4
 │   │   │   └── e835f56f9d76cc4daa708eeb7989f59fe020b2
+│   │   ├── b6
+│   │   │   └── 4dd460b42b57a22190bcbbe8ff21f5a824d466
 │   │   ├── b7
 │   │   │   └── 1924069accc090b136b514334340a1482ed395
 │   │   ├── c0
@@ -121,8 +152,12 @@
 │   │   │   └── 3d2606220abdcac6c0444f93ef24c8eb8a1582
 │   │   ├── c5
 │   │   │   └── ad0ff5f6a0b001861db9b7ea089ec43be39ed6
+│   │   ├── c7
+│   │   │   └── a96e9697a269e300b81c7547701fb939658749
 │   │   ├── cd
 │   │   │   └── 6e8674bf049b59922c80ea072dd3c885c12bb9
+│   │   ├── cf
+│   │   │   └── b71ec7f9e5ae0ff82763fa15dbb0442fa71a4a
 │   │   ├── d1
 │   │   │   └── 40acb25f993b19515b2ea3f2dcee4ae982f39c
 │   │   ├── d4
@@ -131,12 +166,18 @@
 │   │   │   └── e19229c231bb2a062d833ced54853bf5a7cc9a
 │   │   ├── db
 │   │   │   └── d80e1b97ab66e11f52ef89773b975d738d5162
+│   │   ├── dd
+│   │   │   └── efcf6af55c13e1b412ce9147d77f65dcfedcc3
 │   │   ├── de
 │   │   │   └── 07c8facfa6f882cec60c49bed8f68665050ae8
+│   │   ├── df
+│   │   │   └── 911dcf4a5699e534f999dbf549177f19406fc8
 │   │   ├── e2
 │   │   │   └── 0a1799287805f52676cb5cbdab06f42c918767
 │   │   ├── e5
 │   │   │   └── 105c15fc93ca1728ae0734b06e17a9669e1805
+│   │   ├── e9
+│   │   │   └── 0bf1973dc6d0d1fef4857fb4e15b5cf95d9e17
 │   │   ├── f1
 │   │   │   └── b5a73818af3364cc0753da93f895b2a47d3cea
 │   │   ├── f4
@@ -7955,13 +7996,15 @@
 ├── cmd
 │   └── main.go
 ├── configs
-│   └── default.yml
+│   ├── default.yml
+│   └── imaging_config.yaml
 ├── docker-compose.yml
 ├── estructura.txt
 ├── go.mod
 ├── go.sum
 ├── internal
 │   ├── api
+│   │   ├── handler_test.go
 │   │   ├── handlers.go
 │   │   └── router.go
 │   ├── app
@@ -7986,7 +8029,12 @@
 │       └── rpc_bridge.go
 ├── project_issues.txt
 ├── py_services
-│   └── feature_extractor.py
+│   ├── Dockerfile
+│   ├── feature_extractor.py
+│   ├── requirements.txt
+│   └── test_feature_extractor.py
+├── reporte_dependencias.txt
+├── reporte_dependencias_python.txt
 ├── scripts
 │   └── setup.sh
 └── web
@@ -7994,4 +8042,4 @@
     ├── index.html
     └── styles.css
 
-915 directories, 7080 files
+933 directories, 7110 files

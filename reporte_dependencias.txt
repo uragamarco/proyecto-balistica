@@ -1,26 +1,52 @@
 github.com/uragamarco/proyecto-balistica
-github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59
-github.com/boombuler/barcode v1.0.0 [v1.1.0]
+github.com/bytedance/sonic v1.11.6
+github.com/bytedance/sonic/loader v0.1.1
+github.com/cloudwego/base64x v0.1.4
+github.com/cloudwego/iasm v0.2.0
 github.com/coreos/go-systemd/v22 v22.5.0
-github.com/davecgh/go-spew v1.1.0 [v1.1.1]
+github.com/davecgh/go-spew v1.1.1
 github.com/disintegration/imaging v1.6.2
-github.com/godbus/dbus/v5 v5.0.4 [v5.1.0]
-github.com/hybridgroup/mjpeg v0.0.0-20140228234708-4680f319790e [v0.0.0-20250330094202-16d243df0e35]
-github.com/jung-kurt/gofpdf v1.16.2
+github.com/gabriel-vasile/mimetype v1.4.3
+github.com/gin-contrib/sse v0.1.0
+github.com/gin-gonic/gin v1.10.1
+github.com/go-playground/assert/v2 v2.2.0
+github.com/go-playground/locales v0.14.1
+github.com/go-playground/universal-translator v0.18.1
+github.com/go-playground/validator/v10 v10.20.0
+github.com/goccy/go-json v0.10.2
+github.com/godbus/dbus/v5 v5.0.4
+github.com/golang/protobuf v1.5.0
+github.com/google/go-cmp v0.5.5
+github.com/google/gofuzz v1.0.0
+github.com/json-iterator/go v1.1.12
+github.com/klauspost/cpuid/v2 v2.2.7
+github.com/knz/go-libedit v1.10.1
+github.com/leodido/go-urn v1.4.0
 github.com/mattn/go-colorable v0.1.14
 github.com/mattn/go-isatty v0.0.20
-github.com/mattn/go-sqlite3 v1.14.30 [v1.14.31]
-github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-github.com/pascaldekloe/goe v0.1.0 [v0.1.1]
-github.com/phpdave11/gofpdi v1.0.7 [v1.0.15]
+github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+github.com/modern-go/reflect2 v1.0.2
+github.com/pelletier/go-toml/v2 v2.2.2
 github.com/pkg/errors v0.9.1
 github.com/pmezard/go-difflib v1.0.0
 github.com/rs/xid v1.6.0
 github.com/rs/zerolog v1.34.0
-github.com/ruudk/golang-pdf417 v0.0.0-20181029194003-1af4ab5afa58 [v0.0.0-20201230142125-a7e3863a1245]
-github.com/stretchr/testify v1.2.2 [v1.10.0]
-github.com/subeshb1/wasm-go-image-to-ascii v0.0.0-20200725121413-d828986df340
-gocv.io/x/gocv v0.42.0
-golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 [v0.30.0]
+github.com/stretchr/objx v0.5.2
+github.com/stretchr/testify v1.9.0
+github.com/twitchyliquid64/golang-asm v0.15.1
+github.com/ugorji/go/codec v1.2.12
+golang.org/x/arch v0.8.0
+golang.org/x/crypto v0.23.0
+golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
+golang.org/x/mod v0.8.0
+golang.org/x/net v0.25.0
 golang.org/x/sys v0.35.0
-golang.org/x/text v0.3.0 [v0.28.0]
+golang.org/x/term v0.20.0
+golang.org/x/text v0.15.0
+golang.org/x/tools v0.6.0
+golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+google.golang.org/protobuf v1.34.1
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
+gopkg.in/yaml.v3 v3.0.1
+nullprogram.com/x/optparse v1.0.0
+rsc.io/pdf v0.1.1

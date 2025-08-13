@@ -6,18 +6,36 @@ import (
 	"os"
 
 	"github.com/uragamarco/proyecto-balistica/internal/api"
+	"github.com/uragamarco/proyecto-balistica/internal/app"
 	"github.com/uragamarco/proyecto-balistica/internal/config"
 	"github.com/uragamarco/proyecto-balistica/internal/services/chroma"
 	"github.com/uragamarco/proyecto-balistica/internal/services/image_processor"
 	"github.com/uragamarco/proyecto-balistica/internal/services/python_features" // Nuevo paquete
-	"github.com/uragamarco/proyecto-balistica/pkg/integration"                   // Paquete del bridge
+	"github.com/uragamarco/proyecto-balistica/pkg/integration"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func main() {
-	// Load configuration
-	cfg, err := config.LoadConfig("./configs/default.yml")
+	// Cargar configuración
+	cfg, err := config.LoadConfig("configs/default.yml")
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		panic("Error loading config: " + err.Error())
+	}
+
+	// Inicializar logger
+	logger := initLogger(cfg)
+	defer func() {
+		_ = logger.Sync() // Asegurar que todos los logs se escriban
+	}()
+
+	// Crear aplicación
+	application := app.NewApp(cfg, logger)
+
+	// Ejecutar aplicación
+	if err := application.Run(); err != nil {
+		logger.Error("Application failed", zap.Error(err))
+		os.Exit(1)
 	}
 
 	// Initialize Python integration
@@ -62,4 +80,29 @@ func main() {
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Server failed: %v", err)
 	}
+}
+
+func initLogger(cfg *config.Config) *zap.Logger {
+	var logger *zap.Logger
+	var err error
+
+	if cfg.Environment == "production" {
+		// Configuración de producción: JSON format, más rápido
+		config := zap.NewProductionConfig()
+		config.OutputPaths = []string{"stdout", cfg.Logging.File}
+		logger, err = config.Build()
+	} else {
+		// Configuración de desarrollo: más legible
+		config := zap.NewDevelopmentConfig()
+		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		logger, err = config.Build()
+	}
+
+	if err != nil {
+		panic("Failed to initialize logger: " + err.Error())
+	}
+
+	// Reemplazar logger global
+	zap.ReplaceGlobals(logger)
+	return logger
 }
