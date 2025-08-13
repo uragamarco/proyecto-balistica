@@ -44,14 +44,19 @@ func convertColorData(cd []chroma.ColorData) []models.ColorData {
 }
 
 func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
+	// Validar método HTTP
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
 	// Parse multipart form
-	err := r.ParseMultipartForm(10 << 20) // 10 MB max
-	if err != nil {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		http.Error(w, "Error parsing form: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Get image file
+	// Obtener archivo de imagen
 	file, handler, err := r.FormFile("image")
 	if err != nil {
 		http.Error(w, "Error retrieving image: "+err.Error(), http.StatusBadRequest)
@@ -59,18 +64,28 @@ func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Read file content into memory for hash generation
-	var imgBytes bytes.Buffer
-	tee := io.TeeReader(file, &imgBytes)
+	// Validar tipo de archivo
+	contentType := handler.Header.Get("Content-Type")
+	if contentType != "image/jpeg" && contentType != "image/png" {
+		http.Error(w, "Formato de imagen no soportado. Use JPEG o PNG", http.StatusBadRequest)
+		return
+	}
 
-	// Decode image from the TeeReader
-	img, _, err := image.Decode(tee)
+	// Leer contenido de imagen en memoria
+	var imgBytes bytes.Buffer
+	if _, err := io.Copy(&imgBytes, file); err != nil {
+		http.Error(w, "Error reading image: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Decodificar imagen
+	img, _, err := image.Decode(bytes.NewReader(imgBytes.Bytes()))
 	if err != nil {
 		http.Error(w, "Error decoding image: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Create temporary file for Python processing
+	// Crear archivo temporal para procesamiento
 	tempDir := h.imageProcessor.Config.TempDir
 	if tempDir == "" {
 		tempDir = os.TempDir()
@@ -81,47 +96,51 @@ func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error creating temp file: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer os.Remove(tempFile.Name())
-	defer tempFile.Close()
+	defer func() {
+		tempFile.Close()
+		os.Remove(tempFile.Name())
+	}()
 
-	// Write image to temp file
+	// Escribir imagen en archivo temporal
 	if _, err := tempFile.Write(imgBytes.Bytes()); err != nil {
 		http.Error(w, "Error writing temp file: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Process image
+	// Procesar imagen
 	processedImg, err := h.imageProcessor.Process(img)
 	if err != nil {
 		http.Error(w, "Error processing image: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Extract features using the temporary file path
+	// Extraer características
 	features, err := h.imageProcessor.ExtractFeatures(processedImg, tempFile.Name())
 	if err != nil {
 		http.Error(w, "Error extracting features: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Analyze chroma
+	// Analizar croma
 	chromaAnalysis, err := h.chromaService.Analyze(processedImg)
 	if err != nil {
 		http.Error(w, "Error analyzing chroma: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Generate image hash
+	// Generar hash de imagen
 	hash := models.GenerateImageHashFromBytes(imgBytes.Bytes())
 
-	// Check Python status
+	// Verificar estado de características Python
 	pyEnabled, pyStatus := h.imageProcessor.PythonFeaturesStatus()
 	if pyStatus != "" {
-		// Log Python status for debugging
 		h.imageProcessor.Logger.Printf("Python features status: %s", pyStatus)
 	}
 
-	// Prepare response
+	// Calcular confianza del análisis
+	confidence := calculateAnalysisConfidence(features)
+
+	// Preparar respuesta
 	response := models.BallisticAnalysis{
 		Features: features,
 		ChromaData: models.ChromaAnalysis{
@@ -131,9 +150,9 @@ func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
 		Metadata: models.AnalysisMetadata{
 			Timestamp:          time.Now().UTC().Format(time.RFC3339),
 			ImageHash:          hash,
-			ProcessorVersion:   "1.3.0",
+			ProcessorVersion:   "1.4.0", // Versión actualizada
 			PythonFeaturesUsed: pyEnabled,
-			Confidence:         calculateAnalysisConfidence(features), // Nueva función
+			Confidence:         confidence,
 		},
 	}
 
@@ -143,57 +162,85 @@ func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// calculateAnalysisConfidence estima confianza basada en características
+// calculateAnalysisConfidence calcula la confianza del análisis
 func calculateAnalysisConfidence(features map[string]float64) float64 {
+	if len(features) == 0 {
+		return 0.0
+	}
+
 	// Variables para cálculo de confianza
 	var (
 		featureCount = len(features)
 		qualityScore = 0.0
+		keyFeatures  = 0
 	)
 
 	// Ponderar características clave
 	if hu, ok := features["hu_moment_1"]; ok {
 		qualityScore += math.Abs(hu) * 0.3
+		keyFeatures++
 	}
 	if area, ok := features["contour_area"]; ok && area > 0 {
 		qualityScore += math.Log(area) * 0.2
+		keyFeatures++
 	}
 	if str, ok := features["striation_density"]; ok {
 		qualityScore += str * 0.2
+		keyFeatures++
 	}
 
-	// Factor de completitud
-	completeness := float64(featureCount) / 15.0 // Asumiendo 15 características esperadas
+	// Si no hay características clave, devolver confianza baja
+	if keyFeatures == 0 {
+		return 0.0
+	}
+
+	// Normalizar puntaje de calidad
+	qualityScore = qualityScore / float64(keyFeatures)
+
+	// Factor de completitud (asumiendo 15 características esperadas)
+	completeness := float64(featureCount) / 15.0
+	completeness = math.Min(completeness, 1.0) // No más de 1
 
 	// Combinar factores
 	confidence := (qualityScore * 0.7) + (completeness * 0.3)
 
-	// Limitar a rango 0-1
+	// Limitar a rango [0, 1]
 	return math.Max(0, math.Min(1, confidence))
 }
 
 func (h *Handlers) CompareSamples(w http.ResponseWriter, r *http.Request) {
+	// Validar método HTTP
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
 	var comparisonRequest struct {
 		Sample1   map[string]float64 `json:"sample1"`
 		Sample2   map[string]float64 `json:"sample2"`
 		Weights   map[string]float64 `json:"weights,omitempty"`
-		Threshold float64            `json:"threshold,omitempty"` // Nuevo: umbral personalizado
+		Threshold float64            `json:"threshold,omitempty"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&comparisonRequest)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&comparisonRequest); err != nil {
 		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Implement comparison logic
+	// Validar muestras de entrada
+	if len(comparisonRequest.Sample1) == 0 || len(comparisonRequest.Sample2) == 0 {
+		http.Error(w, "Muestras vacías", http.StatusBadRequest)
+		return
+	}
+
+	// Implementar lógica de comparación
 	similarityScore := h.compareFeatures(
 		comparisonRequest.Sample1,
 		comparisonRequest.Sample2,
 		comparisonRequest.Weights,
 	)
 
-	// Determinar coincidencia
+	// Determinar umbral de coincidencia
 	matchThreshold := 0.85
 	if comparisonRequest.Threshold > 0 {
 		matchThreshold = comparisonRequest.Threshold
@@ -213,7 +260,9 @@ func (h *Handlers) CompareSamples(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Error encoding response: "+err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // calculateFeatureDiffs calcula diferencias por característica
@@ -227,10 +276,10 @@ func calculateFeatureDiffs(s1, s2 map[string]float64) map[string]float64 {
 	return diffs
 }
 
-// identifyCriticalDifferences identifica áreas con mayores diferencias
+// identifyCriticalDifferences identifica diferencias críticas
 func identifyCriticalDifferences(s1, s2 map[string]float64) []string {
 	var critical []string
-	threshold := 0.2 // Diferencia significativa
+	const threshold = 0.2 // Diferencia significativa
 
 	for feature, v1 := range s1 {
 		if v2, ok := s2[feature]; ok {
@@ -257,7 +306,7 @@ func (h *Handlers) compareFeatures(f1, f2, weights map[string]float64) float64 {
 			continue
 		}
 
-		// Calcular peso (valor por defecto 1.0)
+		// Obtener peso (valor por defecto 1.0)
 		weight := 1.0
 		if w, ok := weights[feature]; ok {
 			weight = w
@@ -265,8 +314,8 @@ func (h *Handlers) compareFeatures(f1, f2, weights map[string]float64) float64 {
 
 		// Calcular diferencia normalizada
 		maxVal := math.Max(math.Abs(value1), math.Abs(value2))
-		if maxVal == 0 {
-			maxVal = 1 // Evitar división por cero
+		if maxVal < 1e-9 { // Evitar división por cero
+			maxVal = 1
 		}
 
 		diff := math.Abs(value1 - value2)

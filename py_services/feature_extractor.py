@@ -1,48 +1,95 @@
 import cv2
 import numpy as np
-import json
-import sys
-from skimage.feature import local_binary_pattern
+import logging
+import os
+from flask import Flask, request, jsonify
 
-def calculate_hu_moments(image_path):
-    """Calcula los 7 momentos de Hu para la imagen preprocesada"""
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    _, binary = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
-    moments = cv2.moments(binary)
-    hu_moments = cv2.HuMoments(moments).flatten()
-    return [float(m) for m in hu_moments]
+app = Flask(__name__)
 
-def detect_striations(image_path):
-    """Analiza patrones de estrías usando FFT y LBP"""
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    
-    # Análisis de frecuencia
-    f = np.fft.fft2(img)
-    fshift = np.fft.fftshift(f)
-    magnitude_spectrum = 20 * np.log(np.abs(fshift))
-    
-    # Local Binary Patterns
-    lbp = local_binary_pattern(img, 8, 1, method='uniform')
-    hist, _ = np.histogram(lbp, bins=10, range=(0, 10))
-    
-    return [float(x) for x in hist]
+# Configuración avanzada de logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("feature_extractor.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger('FeatureExtractor')
 
-def main():
-    if len(sys.argv) != 2:
-        print(json.dumps({"error": "Se requiere exactamente 1 argumento: path de imagen"}))
-        sys.exit(1)
-    
+class FeatureExtractionError(Exception):
+    pass
+
+def calculate_hu_moments(image_data: bytes) -> list:
     try:
-        response = {
-            "hu_moments": calculate_hu_moments(sys.argv[1]),
-            "striations": detect_striations(sys.argv[1]),
-            "contour_area": 0.0,  # Placeholder - implementar según necesidad
-            "contour_len": 0.0    # Placeholder
-        }
-        print(json.dumps(response))
+        nparr = np.frombuffer(image_data, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            raise FeatureExtractionError("Formato de imagen no soportado")
+        
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        
+        thresh = cv2.adaptiveThreshold(
+            blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+            cv2.THRESH_BINARY_INV, 11, 2
+        )
+        
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            logger.warning("No se encontraron contornos")
+            return [0.0] * 7
+        
+        largest_contour = max(contours, key=cv2.contourArea)
+        mask = np.zeros_like(gray)
+        cv2.drawContours(mask, [largest_contour], -1, 255, thickness=cv2.FILLED)
+        
+        masked_thresh = cv2.bitwise_and(thresh, thresh, mask=mask)
+        moments = cv2.moments(masked_thresh)
+        hu_moments = cv2.HuMoments(moments).flatten()
+        
+        hu_moments = np.where(
+            np.abs(hu_moments) > 1e-9,
+            -np.sign(hu_moments) * np.log10(np.abs(hu_moments)),
+            0
+        )
+        
+        return hu_moments.tolist()
+        
     except Exception as e:
-        print(json.dumps({"error": str(e)}))
-        sys.exit(1)
+        logger.exception("Error en cálculo de momentos de Hu")
+        raise FeatureExtractionError(f"Error de procesamiento: {str(e)}")
 
-if __name__ == "__main__":
-    main()
+@app.route('/extract', methods=['POST'])
+def extract_features_endpoint():
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No se proporcionó imagen"}), 400
+            
+        file = request.files['image']
+        image_data = file.read()
+        
+        hu_moments = calculate_hu_moments(image_data)
+        
+        return jsonify({
+            "hu_moments": hu_moments,
+            "status": "success"
+        })
+        
+    except FeatureExtractionError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        logger.exception("Error inesperado")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+@app.route('/health')
+def health_check():
+    return jsonify({
+        "status": "healthy",
+        "service": "feature-extractor",
+        "version": "1.0.0"
+    })
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+    

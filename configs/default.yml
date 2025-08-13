@@ -5,7 +5,17 @@ imaging:
   edge_threshold: 50
   resolution_dpi: 300
   temp_dir: "/tmp/balistica"
-  temp_dir: "/tmp/balistica" # Directorio para archivos temporales
+  default_resolution: 1200dpi
+  min_quality: 95
+  formats: [".png", ".jpg", ".tiff"]
+  max_file_size: 10MB
+
+
+features:
+  hu_moments_scaling: logarithmic
+  adaptive_threshold:
+    block_size: 11
+    c_constant: 2
 
 chroma:
   color_threshold: 0.05

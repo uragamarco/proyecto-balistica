@@ -1,0 +1,32 @@
+# Configuración de procesamiento de imágenes
+imaging:
+  default_resolution: 1200dpi
+  min_quality: 95
+  max_file_size: 10MB
+  supported_formats:
+    - image/jpeg
+    - image/png
+    - image/tiff
+  quality_metrics:
+    min_sharpness: 50
+    min_contrast: 30
+
+# Configuración de extracción de características
+features:
+  hu_moments_scaling: logarithmic
+  adaptive_threshold:
+    block_size: 11
+    c_constant: 2
+  contour:
+    min_area: 1000
+    max_area: 100000
+  texture:
+    glcm_distances: [1]
+    glcm_angles: [0, 45, 90, 135]
+
+# Configuración de servicios
+services:
+  feature_extractor:
+    max_workers: 4
+    timeout_seconds: 30
+    max_image_dimension: 4000

@@ -1,26 +1,91 @@
 version: '3.8'
 
 services:
-  chromadb:
-    image: chromadb/chroma:latest
-    ports:
-      - "8000:8000"
-    environment:
-      - CHROMA_SERVER_AUTHN_CREDENTIALS=admin:admin
-      - CHROMA_SERVER_AUTHN_PROVIDER=token
-    volumes:
-      - chroma_data:/chroma/chroma
-
-  proyecto-balistica:
-    build: .
+  api-service:
+    build:
+      context: ./internal/api
+      dockerfile: Dockerfile
+      args:
+        GO_VERSION: 1.20
+    command: go run main.go
     ports:
       - "8080:8080"
-    depends_on:
-      - chromadb
     environment:
-      - CHROMA_URL=http://chromadb:8000
+      - FEATURE_SERVICE_URL=http://feature-service:5000
+      - LOG_LEVEL=info
+      - GIN_MODE=release
+      - TEMP_DIR=/tmp/balistica
     volumes:
-      - .:/app
+      - balistica-tmp:/tmp/balistica
+      - ./configs:/app/configs:ro
+    depends_on:
+      feature-service:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - balistica-network
+
+  feature-service:
+    build:
+      context: ./py_services
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: 3.9
+    command: python feature_extractor.py
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=info
+      - OPENCV_THREADS=4
+    volumes:
+      - balistica-data:/app/data
+      - ./configs:/app/configs:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          memory: 2G
+    networks:
+      - balistica-network
+
+networks:
+  balistica-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
 
 volumes:
-  chroma_data:
+  balistica-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data
+  balistica-tmp:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

@@ -1,0 +1,26 @@
+github.com/uragamarco/proyecto-balistica
+github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59
+github.com/boombuler/barcode v1.0.0 [v1.1.0]
+github.com/coreos/go-systemd/v22 v22.5.0
+github.com/davecgh/go-spew v1.1.0 [v1.1.1]
+github.com/disintegration/imaging v1.6.2
+github.com/godbus/dbus/v5 v5.0.4 [v5.1.0]
+github.com/hybridgroup/mjpeg v0.0.0-20140228234708-4680f319790e [v0.0.0-20250330094202-16d243df0e35]
+github.com/jung-kurt/gofpdf v1.16.2
+github.com/mattn/go-colorable v0.1.14
+github.com/mattn/go-isatty v0.0.20
+github.com/mattn/go-sqlite3 v1.14.30 [v1.14.31]
+github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+github.com/pascaldekloe/goe v0.1.0 [v0.1.1]
+github.com/phpdave11/gofpdi v1.0.7 [v1.0.15]
+github.com/pkg/errors v0.9.1
+github.com/pmezard/go-difflib v1.0.0
+github.com/rs/xid v1.6.0
+github.com/rs/zerolog v1.34.0
+github.com/ruudk/golang-pdf417 v0.0.0-20181029194003-1af4ab5afa58 [v0.0.0-20201230142125-a7e3863a1245]
+github.com/stretchr/testify v1.2.2 [v1.10.0]
+github.com/subeshb1/wasm-go-image-to-ascii v0.0.0-20200725121413-d828986df340
+gocv.io/x/gocv v0.42.0
+golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 [v0.30.0]
+golang.org/x/sys v0.35.0
+golang.org/x/text v0.3.0 [v0.28.0]

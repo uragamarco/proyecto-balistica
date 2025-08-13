@@ -8,6 +8,7 @@ type Imaging struct {
 	SharpenAmount float64 `yaml:"sharpen_amount"`
 	EdgeThreshold int     `yaml:"edge_threshold"`
 	ResolutionDPI int     `yaml:"resolution_dpi"`
+	TempDir       string  `yaml:"temp_dir"`
 }
 
 type Chroma struct {
