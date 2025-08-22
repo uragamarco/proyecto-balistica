@@ -1,0 +1,46 @@
+2025-08-21 03:44:37,194 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.30.70.245:5000
+2025-08-21 03:44:37,194 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-21 03:46:11,394 - werkzeug - INFO - 127.0.0.1 - - [21/Aug/2025 03:46:11] "GET /health HTTP/1.1" 200 -
+2025-08-21 03:57:46,508 - werkzeug - INFO - 127.0.0.1 - - [21/Aug/2025 03:57:46] "POST /extract HTTP/1.1" 200 -
+2025-08-21 03:59:55,693 - werkzeug - INFO - 127.0.0.1 - - [21/Aug/2025 03:59:55] "POST /extract HTTP/1.1" 200 -
+2025-08-22 12:02:55,482 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-22 12:02:55,489 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-22 12:03:28,744 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-22 12:03:28,745 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-22 12:03:28,751 - FeatureExtractor - INFO - Procesando archivo de 0.04 MB: test_ballistic.png
+2025-08-22 12:03:28,772 - FeatureExtractor - INFO - Imagen cargada: test_ballistic.png, dimensiones: (200, 200, 3)
+2025-08-22 12:03:29,206 - FeatureExtractor - ERROR - Error en cálculo de características balísticas
+Traceback (most recent call last):
+  File "/home/marco/proyecto-balistica/py_services/feature_extractor.py", line 253, in calculate_ballistic_features
+    lbp = calculate_lbp(gray)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/marco/proyecto-balistica/py_services/feature_extractor.py", line 250, in calculate_lbp
+    lbp[i, j] = int(binary_string, 2) if binary_string else 0
+    ~~~^^^^^^
+OverflowError: Python integer 15001195 out of bounds for uint8
+2025-08-22 12:03:29,208 - FeatureExtractor - ERROR - Error al procesar imagen: test_ballistic.png
+Traceback (most recent call last):
+  File "/home/marco/proyecto-balistica/py_services/feature_extractor.py", line 253, in calculate_ballistic_features
+    lbp = calculate_lbp(gray)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/marco/proyecto-balistica/py_services/feature_extractor.py", line 250, in calculate_lbp
+    lbp[i, j] = int(binary_string, 2) if binary_string else 0
+    ~~~^^^^^^
+OverflowError: Python integer 15001195 out of bounds for uint8
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/marco/proyecto-balistica/py_services/feature_extractor.py", line 324, in extract_features
+    features = calculate_ballistic_features(image_data)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marco/proyecto-balistica/py_services/feature_extractor.py", line 271, in calculate_ballistic_features
+    raise FeatureExtractionError(f"Error de procesamiento: {str(e)}")
+FeatureExtractionError: Error de procesamiento: Python integer 15001195 out of bounds for uint8
+2025-08-22 12:04:14,949 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-22 12:04:14,950 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-22 12:04:14,952 - FeatureExtractor - INFO - Procesando archivo de 0.04 MB: test_ballistic.png
+2025-08-22 12:04:14,954 - FeatureExtractor - INFO - Imagen cargada: test_ballistic.png, dimensiones: (200, 200, 3)

@@ -1,108 +1,78 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/uragamarco/proyecto-balistica/internal/api"
 	"github.com/uragamarco/proyecto-balistica/internal/app"
 	"github.com/uragamarco/proyecto-balistica/internal/config"
-	"github.com/uragamarco/proyecto-balistica/internal/services/chroma"
-	"github.com/uragamarco/proyecto-balistica/internal/services/image_processor"
-	"github.com/uragamarco/proyecto-balistica/internal/services/python_features" // Nuevo paquete
-	"github.com/uragamarco/proyecto-balistica/pkg/integration"
+
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 func main() {
-	// Cargar configuración
-	cfg, err := config.LoadConfig("configs/default.yml")
+	// Cargar configuración principal
+	cfg, err := config.Load("configs/default.yml")
 	if err != nil {
-		panic("Error loading config: " + err.Error())
+		panic("Error cargando configuración: " + err.Error())
 	}
 
-	// Inicializar logger
-	logger := initLogger(cfg)
+	// Inicializar logger con Zap
+	logger, err := config.NewLogger(cfg.Logging.Level, cfg.Logging.Output)
+	if err != nil {
+		panic("Error inicializando logger: " + err.Error())
+	}
 	defer func() {
-		_ = logger.Sync() // Asegurar que todos los logs se escriban
+		// Asegurar que todos los logs se vacíen antes de salir
+		_ = logger.Sync()
 	}()
 
-	// Crear aplicación
-	application := app.NewApp(cfg, logger)
+	// Recuperar panics y registrarlos
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Fatal("Panic recuperado",
+				zap.Any("razón", r),
+				zap.Stack("stack"))
+		}
+	}()
 
-	// Ejecutar aplicación
-	if err := application.Run(); err != nil {
-		logger.Error("Application failed", zap.Error(err))
-		os.Exit(1)
-	}
+	logger.Info("Iniciando aplicación balística",
+		zap.String("versión", cfg.App.Version),
+		zap.String("entorno", cfg.App.Environment))
 
-	// Initialize Python integration
-	pyBridge := integration.NewRPCExtractor()
-	if err := pyBridge.HealthCheck(); err != nil {
-		log.Printf("WARNING: Python features disabled - %v", err)
-		pyBridge = nil // Permite operación sin Python
-	}
-
-	// Initialize services
-	imgProcCfg := &image_processor.Config{
-		Contrast:      cfg.Imaging.Contrast,
-		SharpenSigma:  cfg.Imaging.SharpenSigma,
-		EdgeThreshold: cfg.Imaging.EdgeThreshold,
-		PythonBridge:  pyBridge, // Inyectamos el bridge
-		TempDir:       cfg.Imaging.TempDir,
-		Logger:        log.New(os.Stdout, "IMG_PROC: ", log.LstdFlags),
-	}
-
-	imgProcessor := image_processor.NewImageProcessor(imgProcCfg)
-
-	chromaCfg := &chroma.Config{
-		ColorThreshold: cfg.Chroma.ColorThreshold,
-		SampleSize:     cfg.Chroma.SampleSize,
-	}
-
-	chromaSvc := chroma.NewService(chromaCfg)
-
-	// Initialize feature extraction service
-	featureSvc := python_features.NewService(pyBridge) // Opcional si Python está disponible
-
-	// Initialize API handlers
-	handlers := api.NewHandlers(imgProcessor, chromaSvc, featureSvc)
-
-	// Create and start server
-	server := &http.Server{
-		Addr:    cfg.Server.Address,
-		Handler: api.NewRouter(handlers),
-	}
-
-	log.Printf("Starting server on %s", cfg.Server.Address)
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("Server failed: %v", err)
-	}
-}
-
-func initLogger(cfg *config.Config) *zap.Logger {
-	var logger *zap.Logger
-	var err error
-
-	if cfg.Environment == "production" {
-		// Configuración de producción: JSON format, más rápido
-		config := zap.NewProductionConfig()
-		config.OutputPaths = []string{"stdout", cfg.Logging.File}
-		logger, err = config.Build()
-	} else {
-		// Configuración de desarrollo: más legible
-		config := zap.NewDevelopmentConfig()
-		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-		logger, err = config.Build()
-	}
-
+	// Crear aplicación con inyección de logger
+	balisticaApp, err := app.NewApp(cfg, logger)
 	if err != nil {
-		panic("Failed to initialize logger: " + err.Error())
+		logger.Fatal("Error inicializando aplicación", zap.Error(err))
 	}
 
-	// Reemplazar logger global
-	zap.ReplaceGlobals(logger)
-	return logger
+	// Canal para manejar señales de sistema
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Ejecutar aplicación en goroutine
+	go func() {
+		if err := balisticaApp.Run(); err != nil {
+			logger.Fatal("Error ejecutando aplicación", zap.Error(err))
+		}
+	}()
+
+	logger.Info("Aplicación en ejecución", zap.String("puerto", cfg.Server.Port))
+
+	// Esperar señal de apagado
+	sig := <-sigChan
+	logger.Info("Recibida señal de apagado", zap.String("señal", sig.String()))
+
+	// Apagado controlado
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	if err := balisticaApp.Shutdown(shutdownCtx); err != nil {
+		logger.Error("Error en apagado controlado", zap.Error(err))
+	}
+
+	logger.Info("Aplicación detenida correctamente")
 }

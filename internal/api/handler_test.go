@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"image"
 	"image/color"
+	"image/png"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -17,11 +16,16 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/uragamarco/proyecto-balistica/internal/models"
 	"github.com/uragamarco/proyecto-balistica/internal/services/chroma"
+	"github.com/uragamarco/proyecto-balistica/internal/services/classification"
+	"github.com/uragamarco/proyecto-balistica/internal/services/image_processor"
+	"github.com/uragamarco/proyecto-balistica/internal/storage"
+	"go.uber.org/zap"
 )
 
 // MockImageProcessor para pruebas
 type MockImageProcessor struct {
 	mock.Mock
+	*image_processor.ImageProcessor
 }
 
 func (m *MockImageProcessor) Process(img image.Image) (image.Image, error) {
@@ -29,9 +33,9 @@ func (m *MockImageProcessor) Process(img image.Image) (image.Image, error) {
 	return args.Get(0).(image.Image), args.Error(1)
 }
 
-func (m *MockImageProcessor) ExtractFeatures(img image.Image, tempPath string) (map[string]float64, error) {
+func (m *MockImageProcessor) ExtractFeatures(img image.Image, tempPath string) (map[string]float64, map[string]interface{}, error) {
 	args := m.Called(img, tempPath)
-	return args.Get(0).(map[string]float64), args.Error(1)
+	return args.Get(0).(map[string]float64), args.Get(1).(map[string]interface{}), args.Error(2)
 }
 
 func (m *MockImageProcessor) PythonFeaturesStatus() (bool, string) {
@@ -42,17 +46,50 @@ func (m *MockImageProcessor) PythonFeaturesStatus() (bool, string) {
 // MockChromaService para pruebas
 type MockChromaService struct {
 	mock.Mock
+	*chroma.Service
 }
 
-func (m *MockChromaService) Analyze(img image.Image) (*chroma.AnalysisResult, error) {
+func (m *MockChromaService) Analyze(img image.Image) (*chroma.ChromaAnalysis, error) {
 	args := m.Called(img)
-	return args.Get(0).(*chroma.AnalysisResult), args.Error(1)
+	return args.Get(0).(*chroma.ChromaAnalysis), args.Error(1)
+}
+
+// MockStorageService mock para el servicio de almacenamiento
+type MockStorageService struct {
+	mock.Mock
+}
+
+func (m *MockStorageService) SaveAnalysis(imagePath string, features map[string]float64, metadata *models.AnalysisMetadata) (*storage.BallisticAnalysis, error) {
+	args := m.Called(imagePath, features, metadata)
+	return args.Get(0).(*storage.BallisticAnalysis), args.Error(1)
+}
+
+func (m *MockStorageService) GetAnalysis(id string) (*storage.BallisticAnalysis, error) {
+	args := m.Called(id)
+	return args.Get(0).(*storage.BallisticAnalysis), args.Error(1)
+}
+
+func (m *MockStorageService) Close() error {
+	args := m.Called()
+	return args.Error(0)
 }
 
 func TestProcessImageHandler(t *testing.T) {
+	// Crear handler
+	logger, _ := zap.NewDevelopment()
+
 	// Configurar mocks
-	mockImgProc := new(MockImageProcessor)
-	mockChroma := new(MockChromaService)
+	mockImgProc := &MockImageProcessor{
+		ImageProcessor: image_processor.NewImageProcessor(&image_processor.Config{
+			Logger: logger,
+		}, nil),
+	}
+	mockChroma := &MockChromaService{
+		Service: chroma.NewService(&chroma.Config{
+			SampleSize:     100,
+			ColorThreshold: 0.05,
+		}),
+	}
 
 	// Configurar valores esperados
 	processedImg := image.NewRGBA(image.Rect(0, 0, 100, 100))
@@ -60,49 +97,70 @@ func TestProcessImageHandler(t *testing.T) {
 		"hu_moment_1":  0.123,
 		"contour_area": 5000.0,
 	}
-	chromaResult := &chroma.AnalysisResult{
+	chromaResult := &chroma.ChromaAnalysis{
 		DominantColors: []chroma.ColorData{
 			{Color: color.RGBA{R: 255, G: 255, B: 255, A: 255}, Frequency: 0.8},
 		},
-		ColorVariance: 0.1,
+		ColorVariance: map[string]float64{"overall": 0.1},
 	}
 
 	// Configurar expectativas
 	mockImgProc.On("Process", mock.Anything).Return(processedImg, nil)
-	mockImgProc.On("ExtractFeatures", processedImg, mock.Anything).Return(features, nil)
+
+	// Metadatos de prueba
+	metadata := map[string]interface{}{
+		"filename":     "test_image.png",
+		"content_type": "image/png",
+		"file_size":    int64(1024),
+	}
+
+	mockImgProc.On("ExtractFeatures", processedImg, mock.Anything).Return(features, metadata, nil)
 	mockImgProc.On("PythonFeaturesStatus").Return(true, "")
 	mockChroma.On("Analyze", processedImg).Return(chromaResult, nil)
-
-	// Crear handler
-	handlers := NewHandlers(mockImgProc, mockChroma)
+	mockStorage := &MockStorageService{}
+	// Configurar mock para que no falle
+	mockStorage.On("SaveAnalysis", mock.Anything, mock.Anything, mock.Anything).Return(&storage.BallisticAnalysis{}, nil)
+	// Mock classification service
+	mockClassification := &classification.ClassificationService{}
+	handlers := NewHandlers(logger, mockImgProc, mockChroma, &storage.StorageService{}, mockClassification)
 
 	// Crear router Gin para pruebas
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	router.POST("/process", handlers.ProcessImage)
+	router.POST("/process", func(c *gin.Context) {
+		handlers.ProcessImage(c.Writer, c.Request)
+	})
 
-	// Crear archivo temporal de imagen
-	file, err := os.CreateTemp("", "test_image_*.png")
+
+	// Crear una imagen PNG válida en memoria
+	img := image.NewRGBA(image.Rect(0, 0, 10, 10))
+	// Llenar con color blanco
+	for y := 0; y < 10; y++ {
+		for x := 0; x < 10; x++ {
+			img.Set(x, y, color.RGBA{255, 255, 255, 255})
+		}
+	}
+
+	// Codificar como PNG
+	var imgBuffer bytes.Buffer
+	err := png.Encode(&imgBuffer, img)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(file.Name())
-
-	// Escribir una imagen PNG mínima
-	_, err = file.Write([]byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A})
-	if err != nil {
-		t.Fatal(err)
-	}
-	file.Close()
 
 	// Preparar solicitud multipart
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("image", filepath.Base(file.Name()))
+
+	// Crear header personalizado para especificar content-type
+	h := make(map[string][]string)
+	h["Content-Disposition"] = []string{`form-data; name="image"; filename="test_image.png"`}
+	h["Content-Type"] = []string{"image/png"}
+	part, err := writer.CreatePart(h)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = part.Write([]byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A})
+	_, err = part.Write(imgBuffer.Bytes())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,13 +194,31 @@ func TestProcessImageHandler(t *testing.T) {
 }
 
 func TestProcessImageHandler_InvalidMethod(t *testing.T) {
-	mockImgProc := new(MockImageProcessor)
-	mockChroma := new(MockChromaService)
-	handlers := NewHandlers(mockImgProc, mockChroma)
+	logger, _ := zap.NewDevelopment()
+	mockImgProc := &MockImageProcessor{
+		ImageProcessor: image_processor.NewImageProcessor(&image_processor.Config{
+			Logger: logger,
+		}, nil),
+	}
+	mockChroma := &MockChromaService{
+		Service: chroma.NewService(&chroma.Config{
+			SampleSize:     100,
+			ColorThreshold: 0.05,
+		}),
+	}
+	// Mock classification service
+	mockClassification := &classification.ClassificationService{}
+	handlers := NewHandlers(logger, mockImgProc, mockChroma, &storage.StorageService{}, mockClassification)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	router.POST("/process", handlers.ProcessImage)
+	router.POST("/process", func(c *gin.Context) {
+		handlers.ProcessImage(c.Writer, c.Request)
+	})
+	// Agregar handler GET para devolver 405
+	router.GET("/process", func(c *gin.Context) {
+		c.JSON(http.StatusMethodNotAllowed, gin.H{"error": "Method not allowed"})
+	})
 
 	req, _ := http.NewRequest("GET", "/process", nil)
 	resp := httptest.NewRecorder()
@@ -152,13 +228,27 @@ func TestProcessImageHandler_InvalidMethod(t *testing.T) {
 }
 
 func TestProcessImageHandler_NoImage(t *testing.T) {
-	mockImgProc := new(MockImageProcessor)
-	mockChroma := new(MockChromaService)
-	handlers := NewHandlers(mockImgProc, mockChroma)
+	logger, _ := zap.NewDevelopment()
+	mockImgProc := &MockImageProcessor{
+		ImageProcessor: image_processor.NewImageProcessor(&image_processor.Config{
+			Logger: logger,
+		}, nil),
+	}
+	mockChroma := &MockChromaService{
+		Service: chroma.NewService(&chroma.Config{
+			SampleSize:     100,
+			ColorThreshold: 0.05,
+		}),
+	}
+	// Mock classification service
+	mockClassification := &classification.ClassificationService{}
+	handlers := NewHandlers(logger, mockImgProc, mockChroma, &storage.StorageService{}, mockClassification)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	router.POST("/process", handlers.ProcessImage)
+	router.POST("/process", func(c *gin.Context) {
+		handlers.ProcessImage(c.Writer, c.Request)
+	})
 
 	// Solicitud sin archivo de imagen
 	body := new(bytes.Buffer)
@@ -171,17 +261,31 @@ func TestProcessImageHandler_NoImage(t *testing.T) {
 	router.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
-	assert.Contains(t, resp.Body.String(), "Error retrieving image")
+	assert.Contains(t, resp.Body.String(), "Error al obtener la imagen")
 }
 
 func TestCompareSamplesHandler(t *testing.T) {
-	mockImgProc := new(MockImageProcessor)
-	mockChroma := new(MockChromaService)
-	handlers := NewHandlers(mockImgProc, mockChroma)
+	logger, _ := zap.NewDevelopment()
+	mockImgProc := &MockImageProcessor{
+		ImageProcessor: image_processor.NewImageProcessor(&image_processor.Config{
+			Logger: logger,
+		}, nil),
+	}
+	mockChroma := &MockChromaService{
+		Service: chroma.NewService(&chroma.Config{
+			SampleSize:     100,
+			ColorThreshold: 0.05,
+		}),
+	}
+	// Mock classification service
+	mockClassification := &classification.ClassificationService{}
+	handlers := NewHandlers(logger, mockImgProc, mockChroma, &storage.StorageService{}, mockClassification)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	router.POST("/compare", handlers.CompareSamples)
+	router.POST("/compare", func(c *gin.Context) {
+		handlers.CompareSamples(c.Writer, c.Request)
+	})
 
 	comparisonRequest := struct {
 		Sample1 map[string]float64 `json:"sample1"`
@@ -209,10 +313,6 @@ func TestCompareSamplesHandler(t *testing.T) {
 }
 
 func TestHealthCheckHandler(t *testing.T) {
-	mockImgProc := new(MockImageProcessor)
-	mockChroma := new(MockChromaService)
-	handlers := NewHandlers(mockImgProc, mockChroma)
-
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	router.GET("/health", func(c *gin.Context) {

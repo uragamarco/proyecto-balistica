@@ -13,16 +13,31 @@ import (
 
 // PythonResponse estructura para parsear la respuesta de Python
 type PythonResponse struct {
-	HuMoments    []float64 `json:"hu_moments"`
-	Striations   []float64 `json:"striations"`
-	ContourArea  float64   `json:"contour_area"`
-	ContourLen   float64   `json:"contour_len"`
-	ErrorMessage string    `json:"error,omitempty"`
+	HuMoments       []float64 `json:"hu_moments"`
+	ContourArea     float64   `json:"contour_area"`
+	ContourLen      float64   `json:"contour_len"`
+	LBPUniformity   float64   `json:"lbp_uniformity"`
+	FiringPinMarks  []struct {
+		X      float64 `json:"x"`
+		Y      float64 `json:"y"`
+		Radius float64 `json:"radius"`
+	} `json:"firing_pin_marks"`
+	StriationPatterns []struct {
+		Angle    float64 `json:"angle"`
+		Length   float64 `json:"length"`
+		Strength float64 `json:"strength"`
+	} `json:"striation_patterns"`
+	ErrorMessage string `json:"error,omitempty"`
+	// Metadatos adicionales
+	Filename     string `json:"filename,omitempty"`
+	ContentType  string `json:"content_type,omitempty"`
+	FileSize     int64  `json:"file_size,omitempty"`
 }
 
 // FeatureExtractor interfaz para abstraer la extracción de features
 type FeatureExtractor interface {
 	ExtractFeatures(imagePath string) (PythonResponse, error)
+	HealthCheck() error
 }
 
 // RPCExtractor implementación concreta usando RPC
@@ -39,6 +54,28 @@ func NewRPCExtractor() *RPCExtractor {
 		ScriptPath: "py_services/feature_extractor.py",
 		VirtualEnv: "balistics-env",
 	}
+}
+
+// HealthCheck verifica si el extractor Python está disponible
+func (r *RPCExtractor) HealthCheck() error {
+	// Verificar si el script existe
+	if _, err := os.Stat(r.ScriptPath); os.IsNotExist(err) {
+		return fmt.Errorf("script Python no encontrado: %s", r.ScriptPath)
+	}
+
+	// Verificar si el entorno virtual existe
+	activatePath := ""
+	if runtime.GOOS == "windows" {
+		activatePath = filepath.Join(r.VirtualEnv, "Scripts", "activate")
+	} else {
+		activatePath = filepath.Join(r.VirtualEnv, "bin", "activate")
+	}
+
+	if _, err := os.Stat(activatePath); os.IsNotExist(err) {
+		return fmt.Errorf("entorno virtual no encontrado: %s", activatePath)
+	}
+
+	return nil
 }
 
 // ExtractFeatures llama al script Python y parsea la respuesta
@@ -58,15 +95,13 @@ func (r *RPCExtractor) ExtractFeatures(imagePath string) (PythonResponse, error)
 			imagePath,
 		)
 	} else {
+		// En sistemas Unix, usamos bash para ejecutar comandos con source
 		cmd = exec.Command(
-			"source",
-			filepath.Join(r.VirtualEnv, "bin", "activate"),
-			"&&",
-			r.PythonPath,
-			r.ScriptPath,
-			imagePath,
+			"bash",
+			"-c",
+			"source "+filepath.Join(r.VirtualEnv, "bin", "activate")+" && "+
+				r.PythonPath+" "+r.ScriptPath+" "+imagePath,
 		)
-		cmd.Shell = true
 	}
 
 	// Capturar salida y errores
@@ -86,7 +121,17 @@ func (r *RPCExtractor) ExtractFeatures(imagePath string) (PythonResponse, error)
 
 	// Parsear respuesta JSON
 	var response PythonResponse
+	var errorResponse struct {
+		Error string `json:"error"`
+	}
+
+	// Primero intentamos parsear como respuesta normal
 	if err := json.Unmarshal(stdout.Bytes(), &response); err != nil {
+		// Si falla, intentamos parsear como respuesta de error
+		if errJson := json.Unmarshal(stdout.Bytes(), &errorResponse); errJson == nil && errorResponse.Error != "" {
+			return PythonResponse{}, errors.New(errorResponse.Error)
+		}
+
 		return PythonResponse{}, fmt.Errorf(
 			"failed to parse python response: %v\nOutput: %s",
 			err,
@@ -108,19 +153,4 @@ func (r *RPCExtractor) ExtractFeatures(imagePath string) (PythonResponse, error)
 	}
 
 	return response, nil
-}
-
-// HealthCheck verifica que el sistema Python esté disponible
-func (r *RPCExtractor) HealthCheck() error {
-	testCmd := exec.Command(r.PythonPath, "--version")
-	if err := testCmd.Run(); err != nil {
-		return fmt.Errorf("python not available: %v", err)
-	}
-
-	// Verificar que el script existe
-	if _, err := os.Stat(r.ScriptPath); os.IsNotExist(err) {
-		return fmt.Errorf("python script not found at %s", r.ScriptPath)
-	}
-
-	return nil
 }

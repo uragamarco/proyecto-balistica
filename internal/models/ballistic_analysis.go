@@ -42,6 +42,9 @@ type AnalysisMetadata struct {
 	Confidence         float64 `json:"confidence"`             // Confianza del análisis (0-1)
 	Caliber            string  `json:"caliber,omitempty"`      // Opcional
 	Manufacturer       string  `json:"manufacturer,omitempty"` // Opcional
+	Filename           string  `json:"filename,omitempty"`     // Nombre del archivo original
+	ContentType        string  `json:"content_type,omitempty"` // Tipo MIME del archivo
+	FileSize           int64   `json:"file_size,omitempty"`    // Tamaño del archivo en bytes
 }
 
 type CartridgeCase struct {

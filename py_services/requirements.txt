@@ -5,3 +5,7 @@ loguru==0.7.2
 Flask==2.3.2
 gunicorn==20.1.0
 pyyaml==6.0
+# Nuevas dependencias para formatos adicionales
+pillow==10.0.0
+rawpy==0.18.0
+tifffile==2023.7.10

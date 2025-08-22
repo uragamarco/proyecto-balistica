@@ -16,7 +16,8 @@ func NewService(bridge integration.FeatureExtractor) *Service {
 	return &Service{bridge: bridge}
 }
 
-func (s *Service) ExtractAdvancedFeatures(imagePath string) (*integration.PythonResponse, error) {
+// ExtractFeatures extrae características de una imagen usando Python
+func (s *Service) ExtractFeatures(imagePath string) (*integration.PythonResponse, error) {
 	if s.bridge == nil {
 		return nil, ErrPythonNotAvailable
 	}
@@ -27,7 +28,11 @@ func (s *Service) ExtractAdvancedFeatures(imagePath string) (*integration.Python
 		return nil, fmt.Errorf("error obteniendo ruta absoluta: %w", err)
 	}
 
-	return s.bridge.ExtractFeatures(absPath)
+	response, err := s.bridge.ExtractFeatures(absPath)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
 }
 
 // HealthCheck verifica la disponibilidad del servicio Python

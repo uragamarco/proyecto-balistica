@@ -1,34 +1,28 @@
-imaging:
-  contrast: 1.2
-  sharpen_sigma: 1.0
-  sharpen_amount: 1.5
-  edge_threshold: 50
-  resolution_dpi: 300
-  temp_dir: "/tmp/balistica"
-  default_resolution: 1200dpi
-  min_quality: 95
-  formats: [".png", ".jpg", ".tiff"]
-  max_file_size: 10MB
-
-
-features:
-  hu_moments_scaling: logarithmic
-  adaptive_threshold:
-    block_size: 11
-    c_constant: 2
-
-chroma:
-  color_threshold: 0.05
-  sample_size: 20
+app:
+  name: "Ballistic Analysis System"
+  version: "0.1.0"
+  environment: "development"  # development, staging, production
 
 server:
-  address: ":8080"
-  timeout:
-    read: 5s
-    write: 10s
-    idle: 15s
+  port: "8080"
 
-python:
-  enabled: true
-  script_path: "py_services/feature_extractor.py"
-  virtual_env: "balistics-env"
+logging:  # Nueva sección para configuración de logging
+  level: "info"  # debug, info, warn, error
+  output: "stdout"  # stdout o file
+  file_path: "logs/app.log"  # solo si output=file
+
+python:  # Nueva sección para servicio Python
+  timeout: "30s"  # timeout para ejecución de scripts Python
+
+imaging:
+  base_path: "./images"
+  output_path: "./output"
+  # Nuevos parámetros para procesamiento balístico
+  reference_scale: 0.05  # mm/pixel
+  min_keypoints: 50
+  match_threshold: 0.7
+
+chromadb:  # Nueva sección para ChromaDB
+  host: "localhost"
+  port: 8000
+  collection: "cartridge_cases"

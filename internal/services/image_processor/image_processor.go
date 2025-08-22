@@ -1,10 +1,10 @@
 package image_processor
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
-	"log"
 	"math"
 	"os"
 	"path/filepath"
@@ -12,6 +12,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/uragamarco/proyecto-balistica/internal/services/python_features"
+	"go.uber.org/zap"
 )
 
 // ImageProcessor provee funcionalidades para procesamiento de imágenes balísticas
@@ -25,11 +26,11 @@ type Config struct {
 	Contrast               float64
 	SharpenSigma           float64
 	EdgeThreshold          int
-	GLCMOffsetDistance     int         // Distancia para cálculo de GLCM (1-3 píxeles)
-	ForegroundThreshold    uint8       // Umbral para detección de objeto (ej: 128)
-	EdgeDetectionThreshold float64     // Sensibilidad para bordes
-	TempDir                string      // Directorio para archivos temporales
-	Logger                 *log.Logger // Logger para registrar eventos
+	GLCMOffsetDistance     int      // Distancia para cálculo de GLCM (1-3 píxeles)
+	ForegroundThreshold    uint8    // Umbral para detección de objeto (ej: 128)
+	EdgeDetectionThreshold float64  // Sensibilidad para bordes
+	TempDir                string   // Directorio para archivos temporales
+	Logger                 *zap.Logger // Logger para registrar eventos
 }
 
 // NewImageProcessor crea una nueva instancia del procesador de imágenes
@@ -42,11 +43,29 @@ func NewImageProcessor(cfg *Config, pyService *python_features.Service) *ImagePr
 
 // Process aplica transformaciones a la imagen para análisis balístico
 func (ip *ImageProcessor) Process(img image.Image) (image.Image, error) {
+	if img == nil {
+		ip.config.Logger.Error("Imagen nula proporcionada para procesamiento")
+		return nil, errors.New("imagen nula proporcionada")
+	}
+
+	start := time.Now()
+	ip.config.Logger.Debug("Iniciando procesamiento de imagen", 
+		zap.Int("width", img.Bounds().Dx()), 
+		zap.Int("height", img.Bounds().Dy()))
+	
+	// Registrar tiempo de procesamiento al finalizar
+	defer func() {
+		ip.config.Logger.Debug("Procesamiento de imagen completado", 
+			zap.Duration("duration", time.Since(start)))
+	}()
+
 	// 1. Convertir a escala de grises
 	grayImg := imaging.Grayscale(img)
+	ip.config.Logger.Debug("Imagen convertida a escala de grises")
 
 	// 2. Ajustar contraste
 	contrastImg := imaging.AdjustContrast(grayImg, ip.config.Contrast)
+	ip.config.Logger.Debug("Contraste ajustado", zap.Float64("contrast_value", ip.config.Contrast))
 
 	// 3. Enfocar imagen
 	sharpenedImg := imaging.Sharpen(contrastImg, ip.config.SharpenSigma)
@@ -58,13 +77,14 @@ func (ip *ImageProcessor) Process(img image.Image) (image.Image, error) {
 }
 
 // ExtractFeatures extrae características balísticas combinando métodos locales y Python
-func (ip *ImageProcessor) ExtractFeatures(img image.Image, originalPath string) (map[string]float64, error) {
+func (ip *ImageProcessor) ExtractFeatures(img image.Image, originalPath string) (map[string]float64, map[string]interface{}, error) {
 	features := make(map[string]float64)
+	metadata := make(map[string]interface{})
 
 	// 1. Características locales (Go)
 	goFeatures, err := ip.extractLocalFeatures(img)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	for k, v := range goFeatures {
@@ -76,13 +96,13 @@ func (ip *ImageProcessor) ExtractFeatures(img image.Image, originalPath string) 
 		// Guardar imagen procesada temporalmente para Python
 		tempPath := filepath.Join(ip.config.TempDir, "processed_"+time.Now().Format("20060102150405")+".png")
 		if err := imaging.Save(img, tempPath); err != nil {
-			return nil, fmt.Errorf("error guardando imagen temporal: %w", err)
+			return nil, nil, fmt.Errorf("error guardando imagen temporal: %w", err)
 		}
 		defer os.Remove(tempPath)
 
-		pyFeatures, err := ip.pythonFeatures.ExtractAdvancedFeatures(tempPath)
+		pyFeatures, err := ip.pythonFeatures.ExtractFeatures(tempPath)
 		if err != nil {
-			return nil, fmt.Errorf("error en extracción Python: %w", err)
+			return nil, nil, fmt.Errorf("error en extracción Python: %w", err)
 		}
 
 		// Combinar características con nombres descriptivos
@@ -90,15 +110,50 @@ func (ip *ImageProcessor) ExtractFeatures(img image.Image, originalPath string) 
 			features[fmt.Sprintf("hu_moment_%d", i+1)] = hu
 		}
 
-		for i, str := range pyFeatures.Striations {
-			features[fmt.Sprintf("striation_%d", i+1)] = str
-		}
-
 		features["contour_area"] = pyFeatures.ContourArea
 		features["contour_length"] = pyFeatures.ContourLen
+		features["lbp_uniformity"] = pyFeatures.LBPUniformity
+
+		// Características de marcas de percutor
+		features["firing_pin_count"] = float64(len(pyFeatures.FiringPinMarks))
+		if len(pyFeatures.FiringPinMarks) > 0 {
+			// Promedio de radios de marcas de percutor
+			var avgRadius float64
+			for _, mark := range pyFeatures.FiringPinMarks {
+				avgRadius += mark.Radius
+			}
+			features["firing_pin_avg_radius"] = avgRadius / float64(len(pyFeatures.FiringPinMarks))
+		}
+
+		// Características de patrones de estriado
+		features["striation_count"] = float64(len(pyFeatures.StriationPatterns))
+		if len(pyFeatures.StriationPatterns) > 0 {
+			// Promedio de ángulos y longitudes de estriado
+			var avgAngle, avgLength, avgStrength float64
+			for _, pattern := range pyFeatures.StriationPatterns {
+				avgAngle += pattern.Angle
+				avgLength += pattern.Length
+				avgStrength += pattern.Strength
+			}
+			count := float64(len(pyFeatures.StriationPatterns))
+			features["striation_avg_angle"] = avgAngle / count
+			features["striation_avg_length"] = avgLength / count
+			features["striation_avg_strength"] = avgStrength / count
+		}
+
+		// Agregar metadatos si están disponibles
+		if pyFeatures.Filename != "" {
+			metadata["filename"] = pyFeatures.Filename
+		}
+		if pyFeatures.ContentType != "" {
+			metadata["content_type"] = pyFeatures.ContentType
+		}
+		if pyFeatures.FileSize > 0 {
+			metadata["file_size"] = pyFeatures.FileSize
+		}
 	}
 
-	return features, nil
+	return features, metadata, nil
 }
 
 // extractLocalFeatures extrae características usando solo métodos Go

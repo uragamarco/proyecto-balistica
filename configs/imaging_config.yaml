@@ -2,11 +2,22 @@
 imaging:
   default_resolution: 1200dpi
   min_quality: 95
-  max_file_size: 10MB
+  max_file_size: 20MB
   supported_formats:
     - image/jpeg
     - image/png
     - image/tiff
+    - image/x-tiff
+    - image/raw
+    - image/x-raw
+    - image/x-dcraw
+    - image/x-adobe-dng
+    - image/bmp
+    - image/x-ms-bmp
+    - image/x-portable-anymap
+    - image/x-portable-bitmap
+    - image/x-portable-graymap
+    - image/x-portable-pixmap
   quality_metrics:
     min_sharpness: 50
     min_contrast: 30
