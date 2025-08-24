@@ -17,6 +17,7 @@ type Config struct {
 	Imaging  ImagingConfig  `yaml:"imaging"`
 	API      APIConfig      `yaml:"api"`
 	Chroma   ChromaConfig   `yaml:"chroma"`
+	Cache    *CacheConfig   `yaml:"cache,omitempty"`
 	Database DatabaseConfig `yaml:"database,omitempty"`
 	Security SecurityConfig `yaml:"security,omitempty"`
 }
@@ -37,6 +38,17 @@ type AppConfig struct {
 // ServerConfig configuración del servidor
 type ServerConfig struct {
 	Port string `yaml:"port"`
+}
+
+// CacheConfig configuración para el sistema de cache
+type CacheConfig struct {
+	Enabled         bool          `yaml:"enabled"`
+	Directory       string        `yaml:"directory"`
+	MemoryTTL       time.Duration `yaml:"memory_ttl"`
+	DiskTTL         time.Duration `yaml:"disk_ttl"`
+	MaxMemoryMB     int           `yaml:"max_memory_mb"`
+	Compress        bool          `yaml:"compress"`
+	CleanupInterval time.Duration `yaml:"cleanup_interval"`
 }
 
 // Load carga la configuración desde un archivo YAML
@@ -118,4 +130,26 @@ func setDefaults(cfg *Config) {
 	if cfg.Chroma.SampleSize == 0 {
 		cfg.Chroma.SampleSize = 1000
 	}
+
+	// Cache defaults
+	if cfg.Cache == nil {
+		cfg.Cache = &CacheConfig{}
+	}
+	if cfg.Cache.Directory == "" {
+		cfg.Cache.Directory = "./cache"
+	}
+	if cfg.Cache.MemoryTTL == 0 {
+		cfg.Cache.MemoryTTL = 5 * time.Minute
+	}
+	if cfg.Cache.DiskTTL == 0 {
+		cfg.Cache.DiskTTL = 30 * time.Minute
+	}
+	if cfg.Cache.MaxMemoryMB == 0 {
+		cfg.Cache.MaxMemoryMB = 100
+	}
+	if cfg.Cache.CleanupInterval == 0 {
+		cfg.Cache.CleanupInterval = 10 * time.Minute
+	}
+	cfg.Cache.Enabled = true
+	cfg.Cache.Compress = true
 }

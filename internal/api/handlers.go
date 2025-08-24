@@ -103,10 +103,26 @@ func (h *Handlers) respondWithJSON(w http.ResponseWriter, code int, payload inte
 	if payload != nil {
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			h.Logger.Error("Error al serializar respuesta JSON", zap.Error(err))
-			h.respondWithError(w, NewAPIError(http.StatusInternalServerError, "Error al generar respuesta", err))
 			return
 		}
 	}
+}
+
+// combineClassificationIndicators combina indicadores de clasificación de arma y calibre
+func (h *Handlers) combineClassificationIndicators(weaponIndicators, caliberIndicators map[string]float64) map[string]float64 {
+	combined := make(map[string]float64)
+
+	// Copiar indicadores de arma con prefijo
+	for key, value := range weaponIndicators {
+		combined["weapon_"+key] = value
+	}
+
+	// Copiar indicadores de calibre con prefijo
+	for key, value := range caliberIndicators {
+		combined["caliber_"+key] = value
+	}
+
+	return combined
 }
 
 func convertColorData(cd []chroma.ColorData) []models.ColorData {
@@ -146,8 +162,8 @@ func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse multipart form
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
+	// Parse multipart form (20MB limit)
+	if err := r.ParseMultipartForm(20 << 20); err != nil {
 		h.respondWithError(w, NewAPIError(http.StatusBadRequest, "Error al procesar el formulario", err))
 		return
 	}
@@ -162,11 +178,11 @@ func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
 
 	// Validar tipo de archivo
 	contentType := handler.Header.Get("Content-Type")
-	if contentType != "image/jpeg" && contentType != "image/png" {
+	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/tiff" {
 		h.respondWithError(w, NewAPIError(
 			http.StatusBadRequest, 
 			"Formato de imagen no soportado", 
-			fmt.Errorf("tipo de contenido no válido: %s. Use JPEG o PNG", contentType)))
+			fmt.Errorf("tipo de contenido no válido: %s. Use JPEG, PNG o TIFF", contentType)))
 		return
 	}
 
@@ -286,6 +302,38 @@ func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Warn("ColorVariance calculada es infinita o NaN, usando valor por defecto", zap.Float64("original_variance", colorVariance))
 	}
 
+	// Realizar clasificación automática si el servicio está disponible
+	var classification *models.ClassificationResult
+	if h.classificationService != nil {
+		classificationStart := time.Now()
+		
+		// Generar ID único para el análisis
+		analysisID := fmt.Sprintf("analysis_%d", time.Now().UnixNano())
+		
+		// Realizar clasificación
+		classificationResult, err := h.classificationService.ClassifyBallistic(r.Context(), analysisID, features)
+		if err != nil {
+			h.Logger.Warn("Error en clasificación automática", zap.Error(err))
+			// No fallar el análisis completo por error en clasificación
+		} else {
+			// Convertir resultado de clasificación al modelo de respuesta
+			classification = &models.ClassificationResult{
+				WeaponType:   classificationResult.WeaponType.WeaponType,
+				Caliber:      classificationResult.Caliber.Caliber,
+				Confidence:   (classificationResult.WeaponType.Confidence + classificationResult.Caliber.Confidence) / 2,
+				Indicators:   h.combineClassificationIndicators(classificationResult.WeaponType.Indicators, classificationResult.Caliber.Indicators),
+				Evidence:     append(classificationResult.WeaponType.Evidence, classificationResult.Caliber.Evidence...),
+				OverallScore: classificationResult.OverallScore,
+			}
+			
+			h.Logger.Info("Clasificación automática completada",
+				zap.String("weapon_type", classification.WeaponType),
+				zap.String("caliber", classification.Caliber),
+				zap.Float64("confidence", classification.Confidence),
+				zap.Duration("duration", time.Since(classificationStart)))
+		}
+	}
+
 	// Preparar respuesta
 	response := models.BallisticAnalysis{
 		Features: features,
@@ -293,6 +341,7 @@ func (h *Handlers) ProcessImage(w http.ResponseWriter, r *http.Request) {
 			DominantColors: convertColorData(chromaAnalysis.DominantColors),
 			ColorVariance:  colorVariance,
 		},
+		Classification: classification, // Incluir clasificación automática
 		Metadata: models.AnalysisMetadata{
 			Timestamp:          time.Now().UTC().Format(time.RFC3339),
 			ImageHash:          hash,

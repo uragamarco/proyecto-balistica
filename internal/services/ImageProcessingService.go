@@ -36,6 +36,7 @@ func NewImageProcessingService(logger *zap.Logger, cfg *config.Config) *ImagePro
 		ForegroundThreshold:    128,
 		EdgeDetectionThreshold: 50.0,
 		TempDir:                cfg.Imaging.TempDir,
+		Logger:                 logger,
 	}
 
 	processor := image_processor.NewImageProcessor(processorConfig, pythonService)

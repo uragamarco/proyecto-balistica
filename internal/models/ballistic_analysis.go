@@ -28,9 +28,20 @@ type ChromaAnalysis struct {
 }
 
 type BallisticAnalysis struct {
-	Features   map[string]float64 `json:"features"` // Cambiado de []float64 a map
-	ChromaData ChromaAnalysis     `json:"chroma_data"`
-	Metadata   AnalysisMetadata   `json:"metadata"` // Estructura mejorada
+	Features       map[string]float64      `json:"features"` // Cambiado de []float64 a map
+	ChromaData     ChromaAnalysis          `json:"chroma_data"`
+	Classification *ClassificationResult   `json:"classification,omitempty"` // Nuevo: clasificación automática
+	Metadata       AnalysisMetadata        `json:"metadata"` // Estructura mejorada
+}
+
+// ClassificationResult resultado de clasificación automática
+type ClassificationResult struct {
+	WeaponType   string             `json:"weapon_type"`
+	Caliber      string             `json:"caliber"`
+	Confidence   float64            `json:"confidence"`
+	Indicators   map[string]float64 `json:"indicators"`
+	Evidence     []string           `json:"evidence"`
+	OverallScore float64            `json:"overall_score"`
 }
 
 // AnalysisMetadata reemplaza BallisticMetadata con campos más relevantes

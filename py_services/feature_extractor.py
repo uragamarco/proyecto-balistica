@@ -24,21 +24,31 @@ class FeatureExtractionError(Exception):
     pass
 
 def detect_firing_pin_marks(gray_img):
-    """Detecta marcas de percutor usando detección de círculos de Hough"""
+    """Detecta marcas de percutor usando detección de círculos de Hough optimizada"""
     try:
-        # Aplicar filtro Gaussiano para reducir ruido
-        blurred = cv2.GaussianBlur(gray_img, (9, 9), 2)
+        # Redimensionar si la imagen es muy grande para acelerar procesamiento
+        original_shape = gray_img.shape
+        if gray_img.shape[0] > 2000 or gray_img.shape[1] > 2000:
+            scale = min(2000 / gray_img.shape[0], 2000 / gray_img.shape[1])
+            new_h, new_w = int(gray_img.shape[0] * scale), int(gray_img.shape[1] * scale)
+            gray_img = cv2.resize(gray_img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+            scale_factor = scale
+        else:
+            scale_factor = 1.0
         
-        # Detectar círculos usando transformada de Hough
+        # Aplicar filtro Gaussiano para reducir ruido
+        blurred = cv2.GaussianBlur(gray_img, (5, 5), 1)  # Kernel más pequeño para mayor velocidad
+        
+        # Detectar círculos usando transformada de Hough con parámetros optimizados
         circles = cv2.HoughCircles(
             blurred,
             cv2.HOUGH_GRADIENT,
-            dp=1,
-            minDist=30,
+            dp=2,  # Resolución más baja para mayor velocidad
+            minDist=20,
             param1=50,
-            param2=30,
-            minRadius=5,
-            maxRadius=100
+            param2=25,  # Umbral más bajo
+            minRadius=3,
+            maxRadius=50  # Radio máximo más pequeño
         )
         
         firing_pin_features = {
@@ -57,10 +67,15 @@ def detect_firing_pin_marks(gray_img):
             positions = []
             
             for (x, y, r) in circles:
-                radii.append(float(r))
-                positions.append([float(x), float(y)])
+                # Escalar de vuelta a coordenadas originales
+                orig_x = float(x / scale_factor)
+                orig_y = float(y / scale_factor)
+                orig_r = float(r / scale_factor)
                 
-                # Calcular intensidad promedio en la región circular
+                radii.append(orig_r)
+                positions.append([orig_x, orig_y])
+                
+                # Calcular intensidad promedio en la región circular (en imagen escalada para velocidad)
                 mask = np.zeros(gray_img.shape, dtype=np.uint8)
                 cv2.circle(mask, (x, y), r, 255, -1)
                 intensity = cv2.mean(gray_img, mask=mask)[0]
@@ -83,12 +98,22 @@ def detect_firing_pin_marks(gray_img):
         }
 
 def detect_striation_patterns(gray_img):
-    """Detecta patrones de estriado usando análisis de gradientes direccionales"""
+    """Detecta patrones de estriado usando análisis de gradientes direccionales optimizado"""
     try:
-        # Aplicar filtro de mediana para reducir ruido
-        denoised = cv2.medianBlur(gray_img, 5)
+        # Redimensionar si la imagen es muy grande para acelerar procesamiento
+        original_shape = gray_img.shape
+        if gray_img.shape[0] > 1500 or gray_img.shape[1] > 1500:
+            scale = min(1500 / gray_img.shape[0], 1500 / gray_img.shape[1])
+            new_h, new_w = int(gray_img.shape[0] * scale), int(gray_img.shape[1] * scale)
+            gray_img = cv2.resize(gray_img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+            scale_factor = scale
+        else:
+            scale_factor = 1.0
         
-        # Calcular gradientes en X e Y
+        # Aplicar filtro de mediana para reducir ruido (kernel más pequeño)
+        denoised = cv2.medianBlur(gray_img, 3)
+        
+        # Calcular gradientes en X e Y con kernel más pequeño
         grad_x = cv2.Sobel(denoised, cv2.CV_64F, 1, 0, ksize=3)
         grad_y = cv2.Sobel(denoised, cv2.CV_64F, 0, 1, ksize=3)
         
@@ -99,8 +124,8 @@ def detect_striation_patterns(gray_img):
         # Normalizar dirección a [0, π]
         direction = np.abs(direction)
         
-        # Crear histograma de direcciones para detectar patrones dominantes
-        hist, bins = np.histogram(direction.flatten(), bins=36, range=(0, np.pi))
+        # Crear histograma de direcciones para detectar patrones dominantes (menos bins)
+        hist, bins = np.histogram(direction.flatten(), bins=18, range=(0, np.pi))
         
         # Encontrar direcciones dominantes
         dominant_directions = []
@@ -111,15 +136,15 @@ def detect_striation_patterns(gray_img):
                 angle = (bins[i] + bins[i+1]) / 2
                 dominant_directions.append(float(angle * 180 / np.pi))  # Convertir a grados
         
-        # Detectar líneas usando transformada de Hough
+        # Detectar líneas usando transformada de Hough con parámetros optimizados
         edges = cv2.Canny(denoised, 50, 150)
         lines = cv2.HoughLinesP(
             edges,
-            rho=1,
-            theta=np.pi/180,
-            threshold=50,
-            minLineLength=30,
-            maxLineGap=10
+            rho=2,  # Resolución más baja para mayor velocidad
+            theta=np.pi/90,  # Menos precisión angular
+            threshold=30,  # Umbral más bajo
+            minLineLength=20,  # Líneas más cortas
+            maxLineGap=15  # Mayor tolerancia a gaps
         )
         
         striation_features = {
@@ -232,28 +257,39 @@ def calculate_ballistic_features(image_data: bytes) -> dict:
         # 3. Detectar patrones de estriado
         striation_features = detect_striation_patterns(gray)
         
-        # 4. Características de textura mejoradas
-        # Calcular LBP (Local Binary Patterns) para textura
-        def calculate_lbp(image, radius=1, n_points=8):
-            """Calcula Local Binary Pattern"""
-            lbp = np.zeros_like(image, dtype=np.uint8)
-            for i in range(radius, image.shape[0] - radius):
-                for j in range(radius, image.shape[1] - radius):
-                    center = image[i, j]
-                    binary_value = 0
-                    for k in range(n_points):
-                        angle = 2 * np.pi * k / n_points
-                        x = int(i + radius * np.cos(angle))
-                        y = int(j + radius * np.sin(angle))
-                        if x < image.shape[0] and y < image.shape[1]:
-                            if image[x, y] >= center:
-                                binary_value += (1 << k)
-                    # Limitar el valor a 255 para uint8
-                    lbp[i, j] = min(binary_value, 255)
+        # 4. Características de textura mejoradas (optimizadas)
+        # Calcular LBP simplificado para mejor rendimiento
+        def calculate_lbp_fast(image, radius=1):
+            """Calcula Local Binary Pattern optimizado"""
+            # Redimensionar imagen si es muy grande para acelerar LBP
+            if image.shape[0] > 1000 or image.shape[1] > 1000:
+                scale = min(1000 / image.shape[0], 1000 / image.shape[1])
+                new_h, new_w = int(image.shape[0] * scale), int(image.shape[1] * scale)
+                image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
+            
+            # LBP simplificado usando solo 4 direcciones para mayor velocidad
+            h, w = image.shape
+            lbp = np.zeros((h-2*radius, w-2*radius), dtype=np.uint8)
+            
+            # Obtener regiones desplazadas
+            center = image[radius:h-radius, radius:w-radius]
+            
+            # 4 direcciones principales (más rápido que 8)
+            neighbors = [
+                image[radius-1:h-radius-1, radius:w-radius],    # arriba
+                image[radius:h-radius, radius+1:w-radius+1],    # derecha
+                image[radius+1:h-radius+1, radius:w-radius],    # abajo
+                image[radius:h-radius, radius-1:w-radius-1]     # izquierda
+            ]
+            
+            # Calcular LBP usando operaciones vectorizadas
+            for i, neighbor in enumerate(neighbors):
+                lbp += ((neighbor >= center) * (2 ** i)).astype(np.uint8)
+            
             return lbp
         
-        lbp = calculate_lbp(gray)
-        lbp_hist, _ = np.histogram(lbp.flatten(), bins=256, range=(0, 256))
+        lbp = calculate_lbp_fast(gray)
+        lbp_hist, _ = np.histogram(lbp.flatten(), bins=16, range=(0, 16))  # Menos bins para LBP de 4 bits
         lbp_uniformity = np.sum(lbp_hist**2) / (np.sum(lbp_hist)**2) if np.sum(lbp_hist) > 0 else 0
         
         # Combinar todas las características
@@ -429,18 +465,44 @@ if __name__ == '__main__':
             # Obtener información del archivo
             file_size = os.path.getsize(args.image_path) / (1024 * 1024)
             
+            # Convertir firing_pin_marks al formato esperado por Go
+            firing_pin_marks_formatted = []
+            if "mark_positions" in features["firing_pin_marks"] and features["firing_pin_marks"]["mark_positions"]:
+                positions = features["firing_pin_marks"]["mark_positions"]
+                intensities = features["firing_pin_marks"].get("mark_intensities", [])
+                avg_radius = features["firing_pin_marks"].get("avg_mark_radius", 5.0)
+                
+                for i, pos in enumerate(positions):
+                    if len(pos) >= 2:
+                        firing_pin_marks_formatted.append({
+                            "x": float(pos[0]),
+                            "y": float(pos[1]),
+                            "radius": float(avg_radius)  # Usar radio promedio para todas las marcas
+                        })
+            
+            # Convertir striation_patterns al formato esperado por Go
+            striation_patterns_formatted = []
+            if "patterns" in features["striation_patterns"] and features["striation_patterns"]["patterns"]:
+                patterns = features["striation_patterns"]["patterns"]
+                for pattern in patterns:
+                    if len(pattern) >= 3:
+                        striation_patterns_formatted.append({
+                            "angle": float(pattern[0]),
+                            "length": float(pattern[1]),
+                            "strength": float(pattern[2])
+                        })
+            
             # Convertir a formato compatible con PythonResponse en Go
             response = {
                 "hu_moments": features["hu_moments"],
                 "contour_area": features["contour_area"],
                 "contour_len": features["contour_len"],
                 "lbp_uniformity": features["lbp_uniformity"],
-                "firing_pin_marks": features["firing_pin_marks"],
-                "striation_patterns": features["striation_patterns"],
-                "metadata": {
-                    "filename": os.path.basename(args.image_path),
-                    "file_size_mb": file_size
-                }
+                "firing_pin_marks": firing_pin_marks_formatted,
+                "striation_patterns": striation_patterns_formatted,
+                "filename": os.path.basename(args.image_path),
+                "content_type": "image/tiff" if args.image_path.lower().endswith(('.tif', '.tiff')) else "image/jpeg",
+                "file_size": int(file_size * 1024 * 1024)
             }
             
             # Imprimir como JSON para que Go pueda parsearlo

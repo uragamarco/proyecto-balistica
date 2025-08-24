@@ -10,53 +10,74 @@ import (
 func NewRouter(h *Handlers) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// Existing endpoints
-	mux.HandleFunc("/api/process", h.ProcessImage)
-	mux.HandleFunc("/api/compare", h.CompareSamples)
+	// Middleware CORS
+	corsHandler := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			
+			// Manejar preflight requests
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+			
+			next.ServeHTTP(w, r)
+		})
+	}
 
-	// Storage endpoints for analyses
-	mux.HandleFunc("/api/analyses", h.GetAnalysesHandler)
-	mux.HandleFunc("/api/analyses/", h.GetAnalysisHandler)
-	mux.HandleFunc("/api/analyses/search", h.SearchAnalysesHandler)
-	mux.HandleFunc("/api/analyses/delete/", h.DeleteAnalysisHandler)
+	// Servir archivos estáticos desde la carpeta web
+	fs := http.FileServer(http.Dir("web/"))
+	mux.Handle("/", fs)
 
-	// Storage endpoints for comparisons
-	mux.HandleFunc("/api/comparisons/", h.GetComparisonHandler)
-	mux.HandleFunc("/api/comparisons/sample/", h.GetComparisonsBySampleHandler)
-	mux.HandleFunc("/api/comparisons/similarity", h.GetSimilarComparisonsHandler)
-	mux.HandleFunc("/api/comparisons/date-range", h.GetComparisonsByDateRangeHandler)
+	// Existing endpoints con CORS
+	mux.Handle("/api/process", corsHandler(http.HandlerFunc(h.ProcessImage)))
+	mux.Handle("/api/compare", corsHandler(http.HandlerFunc(h.CompareSamples)))
 
-	// Advanced search endpoint
-	mux.HandleFunc("/api/search/advanced", h.AdvancedSearchHandler)
+	// Storage endpoints for analyses con CORS
+	mux.Handle("/api/analyses", corsHandler(http.HandlerFunc(h.GetAnalysesHandler)))
+	mux.Handle("/api/analyses/", corsHandler(http.HandlerFunc(h.GetAnalysisHandler)))
+	mux.Handle("/api/analyses/search", corsHandler(http.HandlerFunc(h.SearchAnalysesHandler)))
+	mux.Handle("/api/analyses/delete/", corsHandler(http.HandlerFunc(h.DeleteAnalysisHandler)))
+
+	// Storage endpoints for comparisons con CORS
+	mux.Handle("/api/comparisons/", corsHandler(http.HandlerFunc(h.GetComparisonHandler)))
+	mux.Handle("/api/comparisons/sample/", corsHandler(http.HandlerFunc(h.GetComparisonsBySampleHandler)))
+	mux.Handle("/api/comparisons/similarity", corsHandler(http.HandlerFunc(h.GetSimilarComparisonsHandler)))
+	mux.Handle("/api/comparisons/date-range", corsHandler(http.HandlerFunc(h.GetComparisonsByDateRangeHandler)))
+
+	// Advanced search endpoint con CORS
+	mux.Handle("/api/search/advanced", corsHandler(http.HandlerFunc(h.AdvancedSearchHandler)))
 
 	// Crear handler de clasificación
 	classificationHandler := handlers.NewClassificationHandler(h.classificationService, h.Logger)
 
-	// Classification endpoints
-	mux.HandleFunc("/api/classification/classify", classificationHandler.ClassifyBallistic)
-	mux.HandleFunc("/api/classification/history", classificationHandler.GetClassificationHistory)
-	mux.HandleFunc("/api/classification/analysis/", func(w http.ResponseWriter, r *http.Request) {
+	// Classification endpoints con CORS
+	mux.Handle("/api/classification/classify", corsHandler(http.HandlerFunc(classificationHandler.ClassifyBallistic)))
+	mux.Handle("/api/classification/history", corsHandler(http.HandlerFunc(classificationHandler.GetClassificationHistory)))
+	mux.Handle("/api/classification/analysis/", corsHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/classification/analysis/") {
 			classificationHandler.GetClassificationByAnalysisID(w, r)
 		}
-	})
-	mux.HandleFunc("/api/classification/search/weapon/", func(w http.ResponseWriter, r *http.Request) {
+	})))
+	mux.Handle("/api/classification/search/weapon/", corsHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/classification/search/weapon/") {
 			classificationHandler.SearchByWeaponType(w, r)
 		}
-	})
-	mux.HandleFunc("/api/classification/search/caliber/", func(w http.ResponseWriter, r *http.Request) {
+	})))
+	mux.Handle("/api/classification/search/caliber/", corsHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/classification/search/caliber/") {
 			classificationHandler.SearchByCaliber(w, r)
 		}
-	})
+	})))
 
-	// Health endpoint
-	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
+	// Health endpoint con CORS
+	mux.Handle("/api/health", corsHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"ok","service":"ballistic-analysis-api"}`))
-	})
+	})))
 
 	return mux
 }

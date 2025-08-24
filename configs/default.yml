@@ -26,3 +26,16 @@ chromadb:  # Nueva sección para ChromaDB
   host: "localhost"
   port: 8000
   collection: "cartridge_cases"
+
+cache:  # Nueva sección para sistema de cache
+  enabled: true
+  directory: "./cache"
+  memory_ttl: "5m"  # TTL para cache en memoria
+  disk_ttl: "30m"   # TTL para cache en disco
+  max_memory_mb: 100  # Máximo uso de memoria en MB
+  compress: true      # Comprimir datos en disco
+  cleanup_interval: "10m"  # Intervalo de limpieza automática
+
+chroma:  # Configuración para análisis de color
+  color_threshold: 0.1
+  sample_size: 1000

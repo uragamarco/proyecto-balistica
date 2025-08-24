@@ -1,0 +1,153 @@
+2025-08-23 09:18:37,022 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 09:18:37,023 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 09:18:37,032 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.30.70.245:5000
+2025-08-23 09:18:37,034 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-23 11:01:14,011 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 11:01:14,017 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 11:01:14,036 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.30.70.245:5000
+2025-08-23 11:01:14,037 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-23 11:08:47,939 - FeatureExtractor - INFO - Recibido archivo: vaina_pistola_Colt_9mm_01.png, tipo: image/png
+2025-08-23 11:08:47,971 - FeatureExtractor - INFO - Procesando imagen de 3.37 MB
+2025-08-23 11:25:59,854 - werkzeug - INFO - 127.0.0.1 - - [23/Aug/2025 11:25:59] "POST /extract HTTP/1.1" 200 -
+2025-08-23 11:38:27,492 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 11:38:27,496 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 11:38:27,499 - FeatureExtractor - INFO - Procesando archivo de 0.04 MB: /tmp/balistica/processed_20250823113824.png
+2025-08-23 11:38:27,631 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823113824.png, dimensiones: (2592, 1944, 3)
+2025-08-23 11:41:42,341 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 11:41:42,342 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 11:41:42,344 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823114140.png
+2025-08-23 11:41:42,527 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823114140.png, dimensiones: (1944, 2592, 3)
+2025-08-23 12:03:43,022 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 12:03:43,031 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 12:03:43,033 - FeatureExtractor - INFO - Procesando archivo de 0.04 MB: /tmp/balistica/processed_20250823120339.png
+2025-08-23 12:03:43,235 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823120339.png, dimensiones: (2592, 1944, 3)
+2025-08-23 12:20:58,472 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 12:20:58,474 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 12:20:58,477 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823122056.png
+2025-08-23 12:20:58,615 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823122056.png, dimensiones: (1944, 2592, 3)
+2025-08-23 12:47:14,278 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 12:47:14,278 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 12:47:14,280 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823124712.png
+2025-08-23 12:47:14,473 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823124712.png, dimensiones: (1944, 2592, 3)
+2025-08-23 12:50:14,221 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 12:50:14,222 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 12:50:14,225 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823125012.png
+2025-08-23 12:50:14,440 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823125012.png, dimensiones: (1944, 2592, 3)
+2025-08-23 13:11:56,087 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 13:11:56,088 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 13:11:56,090 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823131154.png
+2025-08-23 13:11:56,237 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823131154.png, dimensiones: (1944, 2592, 3)
+2025-08-23 13:33:36,426 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 13:33:36,426 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 13:33:36,438 - FeatureExtractor - INFO - Procesando archivo de 0.11 MB: /tmp/balistica/processed_20250823133334.png
+2025-08-23 13:33:36,619 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823133334.png, dimensiones: (1944, 2592, 3)
+2025-08-23 13:49:05,123 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 13:49:05,124 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 13:49:05,126 - FeatureExtractor - INFO - Procesando archivo de 0.11 MB: /tmp/balistica/processed_20250823134903.png
+2025-08-23 13:49:05,266 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823134903.png, dimensiones: (1944, 2592, 3)
+2025-08-23 13:58:32,457 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 13:58:32,458 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 13:58:32,460 - FeatureExtractor - INFO - Procesando archivo de 0.08 MB: /tmp/balistica/processed_20250823135830.png
+2025-08-23 13:58:32,663 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823135830.png, dimensiones: (1944, 2592, 3)
+2025-08-23 14:16:52,787 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 14:16:52,788 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 14:16:52,798 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823141651.png
+2025-08-23 14:16:52,937 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823141651.png, dimensiones: (1944, 2592, 3)
+2025-08-23 14:22:31,146 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 14:22:31,155 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 14:22:31,157 - FeatureExtractor - INFO - Procesando archivo de 0.08 MB: /tmp/balistica/processed_20250823142229.png
+2025-08-23 14:22:31,423 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823142229.png, dimensiones: (1944, 2592, 3)
+2025-08-23 14:46:21,954 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 14:46:21,956 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 14:46:21,966 - FeatureExtractor - INFO - Procesando archivo de 0.08 MB: /tmp/balistica/processed_20250823144620.png
+2025-08-23 14:46:22,131 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823144620.png, dimensiones: (1944, 2592, 3)
+2025-08-23 14:52:48,494 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 14:52:48,506 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 14:52:48,508 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823145247.png
+2025-08-23 14:52:48,653 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823145247.png, dimensiones: (1944, 2592, 3)
+2025-08-23 15:22:58,709 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 15:22:58,710 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 15:22:58,716 - FeatureExtractor - INFO - Procesando archivo de 0.08 MB: /tmp/balistica/processed_20250823152256.png
+2025-08-23 15:22:58,899 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823152256.png, dimensiones: (1944, 2592, 3)
+2025-08-23 15:24:42,534 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 15:24:42,535 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 15:24:42,537 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823152441.png
+2025-08-23 15:24:42,667 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823152441.png, dimensiones: (1944, 2592, 3)
+2025-08-23 15:29:03,111 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 15:29:03,112 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 15:29:03,113 - FeatureExtractor - INFO - Procesando archivo de 0.08 MB: /tmp/balistica/processed_20250823152901.png
+2025-08-23 15:29:03,294 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823152901.png, dimensiones: (1944, 2592, 3)
+2025-08-23 15:29:37,718 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 15:29:37,719 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 15:29:37,730 - FeatureExtractor - INFO - Procesando archivo de 0.08 MB: /tmp/balistica/processed_20250823152936.png
+2025-08-23 15:29:37,887 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823152936.png, dimensiones: (1944, 2592, 3)
+2025-08-23 15:30:26,828 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 15:30:26,831 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 15:30:26,836 - FeatureExtractor - INFO - Procesando archivo de 0.11 MB: /tmp/balistica/processed_20250823153025.png
+2025-08-23 15:30:26,993 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823153025.png, dimensiones: (1944, 2592, 3)
+2025-08-23 15:34:16,294 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-23 15:34:16,296 - FeatureExtractor - WARNING - PIL/Pillow no está instalado. El soporte para algunos formatos estará limitado
+2025-08-23 15:34:16,298 - FeatureExtractor - INFO - Procesando archivo de 0.05 MB: /tmp/balistica/processed_20250823153414.png
+2025-08-23 15:34:16,431 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250823153414.png, dimensiones: (1944, 2592, 3)
+2025-08-24 05:05:10,444 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:10,521 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:10,523 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050508.png
+2025-08-24 05:05:10,579 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050508.png, dimensiones: (600, 800, 3)
+2025-08-24 05:05:15,195 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:15,284 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:15,286 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050513.png
+2025-08-24 05:05:15,313 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050513.png, dimensiones: (600, 800, 3)
+2025-08-24 05:05:19,363 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:19,432 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:19,435 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050517.png
+2025-08-24 05:05:19,454 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050517.png, dimensiones: (600, 800, 3)
+2025-08-24 05:05:22,738 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:22,809 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:22,812 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050521.png
+2025-08-24 05:05:22,827 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050521.png, dimensiones: (480, 640, 3)
+2025-08-24 05:05:27,558 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:27,624 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:27,631 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050526.png
+2025-08-24 05:05:27,647 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050526.png, dimensiones: (480, 640, 3)
+2025-08-24 05:05:31,375 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:31,464 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:31,467 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050529.png
+2025-08-24 05:05:31,480 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050529.png, dimensiones: (480, 640, 3)
+2025-08-24 05:05:35,692 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:35,780 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:35,782 - FeatureExtractor - INFO - Procesando archivo de 0.01 MB: /tmp/balistica/processed_20250824050534.png
+2025-08-24 05:05:35,831 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050534.png, dimensiones: (768, 1024, 3)
+2025-08-24 05:05:41,058 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:41,147 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:41,150 - FeatureExtractor - INFO - Procesando archivo de 0.01 MB: /tmp/balistica/processed_20250824050539.png
+2025-08-24 05:05:41,185 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050539.png, dimensiones: (768, 1024, 3)
+2025-08-24 05:05:47,692 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:47,773 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:47,776 - FeatureExtractor - INFO - Procesando archivo de 0.01 MB: /tmp/balistica/processed_20250824050545.png
+2025-08-24 05:05:47,823 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050545.png, dimensiones: (768, 1024, 3)
+2025-08-24 05:05:53,787 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:53,876 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:53,879 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050551.png
+2025-08-24 05:05:53,917 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050551.png, dimensiones: (600, 800, 3)
+2025-08-24 05:05:54,433 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:05:54,509 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:05:54,511 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050551.png
+2025-08-24 05:05:54,533 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050551.png, dimensiones: (600, 800, 3)
+2025-08-24 05:06:01,145 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:06:01,234 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:06:01,248 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050556.png
+2025-08-24 05:06:01,267 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050556.png, dimensiones: (480, 640, 3)
+2025-08-24 05:06:02,073 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:06:02,189 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:06:02,192 - FeatureExtractor - INFO - Procesando archivo de 0.00 MB: /tmp/balistica/processed_20250824050559.png
+2025-08-24 05:06:02,230 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050559.png, dimensiones: (600, 800, 3)
+2025-08-24 05:06:02,810 - FeatureExtractor - WARNING - rawpy no está instalado. El soporte para archivos RAW estará limitado
+2025-08-24 05:06:02,884 - FeatureExtractor - INFO - PIL/Pillow está disponible para formatos de imagen adicionales
+2025-08-24 05:06:02,886 - FeatureExtractor - INFO - Procesando archivo de 0.01 MB: /tmp/balistica/processed_20250824050600.png
+2025-08-24 05:06:02,935 - FeatureExtractor - INFO - Imagen cargada: /tmp/balistica/processed_20250824050600.png, dimensiones: (768, 1024, 3)

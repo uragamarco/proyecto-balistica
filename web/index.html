@@ -3,31 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Balística</title>
+    <title>Sistema de Análisis Balístico Forense</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <h1>Análisis de Imágenes Balísticas</h1>
-        
-        <div class="upload-box">
-            <input type="file" id="imageInput" accept="image/*">
-            <label for="imageInput">Seleccionar imagen</label>
-            <button id="analyzeBtn">Analizar</button>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-crosshairs"></i>
+                <h1>Análisis Balístico Forense</h1>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-section="analysis"><i class="fas fa-search"></i> Análisis</a>
+                <a href="#" class="nav-item" data-section="compare"><i class="fas fa-balance-scale"></i> Comparar</a>
+                <a href="#" class="nav-item" data-section="history"><i class="fas fa-history"></i> Historial</a>
+            </nav>
         </div>
+    </header>
 
-        <div class="results">
-            <h2>Resultados:</h2>
-            <div class="result-item">
-                <h3>Características:</h3>
-                <div id="features"></div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Analysis Section -->
+        <section id="analysis-section" class="content-section active">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-microscope"></i> Análisis Individual de Muestra</h2>
+                    <p>Carga una imagen de vaina percutida o proyectil disparado para análisis automático</p>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Arrastra tu imagen aquí</h3>
+                        <p>o haz clic para seleccionar archivo</p>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                        <button class="upload-btn" id="uploadBtn">
+                            <i class="fas fa-folder-open"></i> Seleccionar Imagen
+                        </button>
+                        <div class="file-info">
+                            <small>Formatos soportados: JPG, PNG, BMP, TIFF (máx. 20MB)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Preview -->
+                <div class="image-preview" id="imagePreview" style="display: none;">
+                    <div class="preview-header">
+                        <h3><i class="fas fa-image"></i> Vista Previa</h3>
+                        <button class="btn-secondary" id="changeImageBtn">
+                            <i class="fas fa-exchange-alt"></i> Cambiar Imagen
+                        </button>
+                    </div>
+                    <div class="preview-content">
+                        <img id="previewImage" alt="Vista previa">
+                        <div class="image-info">
+                            <div class="info-item">
+                                <span class="label">Archivo:</span>
+                                <span id="fileName">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Tamaño:</span>
+                                <span id="fileSize">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Dimensiones:</span>
+                                <span id="imageDimensions">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preview-actions">
+                        <button class="btn-primary" id="analyzeBtn">
+                            <i class="fas fa-play"></i> Iniciar Análisis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="loading-container" id="loadingContainer" style="display: none;">
+                    <div class="loading-content">
+                        <div class="spinner"></div>
+                        <h3>Analizando muestra...</h3>
+                        <p id="loadingText">Extrayendo características balísticas</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="results-container" id="resultsContainer" style="display: none;">
+                    <div class="results-header">
+                        <h3><i class="fas fa-chart-line"></i> Resultados del Análisis</h3>
+                        <div class="results-actions">
+                            <button class="btn-secondary" id="exportBtn">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                            <button class="btn-secondary" id="saveBtn">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Classification Results -->
+                    <div class="classification-results">
+                        <h4><i class="fas fa-tags"></i> Clasificación Automática</h4>
+                        <div class="classification-grid">
+                            <div class="classification-item">
+                                <div class="classification-label">Tipo de Arma</div>
+                                <div class="classification-value" id="weaponType">-</div>
+                                <div class="classification-confidence" id="weaponConfidence">-</div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="weaponConfidenceBar"></div>
+                                </div>
+                                <div class="confidence-text" id="weaponConfidenceText">-</div>
+                            </div>
+                            <div class="classification-item">
+                                <div class="classification-label">Calibre</div>
+                                <div class="classification-value" id="caliber">-</div>
+                                <div class="classification-confidence" id="caliberConfidence">-</div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="caliberConfidenceBar"></div>
+                                </div>
+                                <div class="confidence-text" id="caliberConfidenceText">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Detected -->
+                    <div class="features-detected">
+                        <h4><i class="fas fa-search-plus"></i> Características Detectadas</h4>
+                        <div class="features-grid" id="featuresGrid">
+                            <!-- Features will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Technical Details -->
+                    <div class="technical-details">
+                        <div class="details-header" id="detailsHeader">
+                            <h4><i class="fas fa-cog"></i> Detalles Técnicos</h4>
+                            <i class="fas fa-chevron-down toggle-icon" id="toggleIcon"></i>
+                        </div>
+                        <div class="details-content" id="detailsContent" style="display: none;">
+                            <div id="technicalData"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="result-item">
-                <h3>Imagen Procesada:</h3>
-                <img id="processedImage" style="max-width: 300px;">
+        </section>
+
+        <!-- Compare Section -->
+        <section id="compare-section" class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-balance-scale"></i> Comparación de Muestras</h2>
+                    <p>Compara dos muestras para determinar similitud y posibles coincidencias</p>
+                </div>
+                
+                <!-- Upload Areas -->
+                <div class="comparison-upload-area">
+                    <div class="upload-row">
+                        <div class="upload-column">
+                            <h3>Muestra 1</h3>
+                            <div class="upload-box" id="uploadBox1">
+                                <div class="upload-content" id="uploadContent1">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Arrastra una imagen aquí o haz clic para seleccionar</p>
+                                    <p class="upload-hint">Formatos: JPEG, PNG, TIFF (máx. 20MB)</p>
+                                </div>
+                                <input type="file" id="fileInput1" accept="image/*" style="display: none;">
+                            </div>
+                            <div class="image-preview" id="imagePreview1" style="display: none;">
+                                <img id="previewImage1" alt="Muestra 1">
+                                <div class="image-info">
+                                    <p id="fileName1"></p>
+                                    <p id="fileSize1"></p>
+                                    <p id="imageDimensions1"></p>
+                                </div>
+                                <button class="btn-change" onclick="changeSample(1)">Cambiar imagen</button>
+                            </div>
+                        </div>
+                        
+                        <div class="upload-column">
+                            <h3>Muestra 2</h3>
+                            <div class="upload-box" id="uploadBox2">
+                                <div class="upload-content" id="uploadContent2">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Arrastra una imagen aquí o haz clic para seleccionar</p>
+                                    <p class="upload-hint">Formatos: JPEG, PNG, TIFF (máx. 20MB)</p>
+                                </div>
+                                <input type="file" id="fileInput2" accept="image/*" style="display: none;">
+                            </div>
+                            <div class="image-preview" id="imagePreview2" style="display: none;">
+                                <img id="previewImage2" alt="Muestra 2">
+                                <div class="image-info">
+                                    <p id="fileName2"></p>
+                                    <p id="fileSize2"></p>
+                                    <p id="imageDimensions2"></p>
+                                </div>
+                                <button class="btn-change" onclick="changeSample(2)">Cambiar imagen</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="compare-actions">
+                        <button id="compareBtn" class="btn-primary" onclick="compareSamples()" disabled>
+                            <i class="fas fa-balance-scale"></i> Comparar Muestras
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Loading State -->
+                <div class="loading-container" id="compareLoadingContainer" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>Comparando muestras...</p>
+                </div>
+                
+                <!-- Comparison Results -->
+                <div class="comparison-results" id="comparisonResults" style="display: none;">
+                    <div class="results-header">
+                        <h3>Resultados de Comparación</h3>
+                    </div>
+                    
+                    <div class="similarity-score">
+                        <div class="score-circle">
+                            <div class="score-value" id="similarityScore">0%</div>
+                            <div class="score-label">Similitud</div>
+                        </div>
+                        <div class="confidence-indicator">
+                            <span class="confidence-text" id="confidenceText">Baja confianza</span>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-details">
+                        <div class="detail-section">
+                            <h4>Características Comparadas</h4>
+                            <div id="featureComparison"></div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Análisis Estadístico</h4>
+                            <div id="statisticalAnalysis"></div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>Conclusión</h4>
+                            <div id="comparisonConclusion"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history-section" class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i> Historial de Análisis</h2>
+                    <p>Revisa análisis anteriores y gestiona tu base de datos</p>
+                </div>
+                <div class="history-placeholder">
+                    <i class="fas fa-database"></i>
+                    <h3>Historial de Análisis</h3>
+                    <p>Esta sección será implementada próximamente</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 Sistema de Análisis Balístico Forense - Versión MVP 1.0</p>
         </div>
-    </div>
+    </footer>
 
     <script src="demo.js"></script>
 </body>

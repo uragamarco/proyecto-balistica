@@ -1,0 +1,91 @@
+{
+  "individual_analysis": [
+    {
+      "image": "casquillo_circular_800x600.jpg",
+      "size_mb": 0.018838882446289062,
+      "iterations": 3,
+      "success_rate": 100.0,
+      "avg_time": 4.3069413503011065,
+      "min_time": 3.9916672706604004,
+      "max_time": 4.6541314125061035,
+      "std_dev": 0.3323832987156906
+    },
+    {
+      "image": "casquillo_ruidoso_640x480.jpg",
+      "size_mb": 0.08635520935058594,
+      "iterations": 3,
+      "success_rate": 100.0,
+      "avg_time": 3.9140237967173257,
+      "min_time": 3.1702661514282227,
+      "max_time": 4.9196999073028564,
+      "std_dev": 0.9036484816541407
+    },
+    {
+      "image": "casquillo_rectangular_1024x768.jpg",
+      "size_mb": 0.03847694396972656,
+      "iterations": 3,
+      "success_rate": 100.0,
+      "avg_time": 5.956100225448608,
+      "min_time": 5.6775288581848145,
+      "max_time": 6.434725046157837,
+      "std_dev": 0.41635628366436683
+    }
+  ],
+  "comparison_tests": [],
+  "concurrent_tests": [
+    {
+      "concurrent_users": 2,
+      "total_requests": 2,
+      "successful_requests": 2,
+      "success_rate": 100.0,
+      "total_time": 5.798388719558716,
+      "avg_response_time": 5.608968377113342,
+      "throughput": 0.34492340833475704
+    },
+    {
+      "concurrent_users": 3,
+      "total_requests": 3,
+      "successful_requests": 3,
+      "success_rate": 100.0,
+      "total_time": 9.251497030258179,
+      "avg_response_time": 7.971447626749675,
+      "throughput": 0.32427184380950724
+    }
+  ],
+  "resource_usage": {
+    "cpu": {
+      "avg": 63.11296296296296,
+      "max": 100.0,
+      "min": 0.0
+    },
+    "memory": {
+      "avg": 69.86944444444444,
+      "max": 71.8,
+      "min": 68.5
+    }
+  },
+  "summary": {
+    "individual_analysis": {
+      "avg_processing_time": 4.725688457489014,
+      "max_processing_time": 5.956100225448608,
+      "min_processing_time": 3.9140237967173257,
+      "overall_success_rate": 100.0
+    },
+    "concurrent_analysis": {
+      "max_throughput": 0.34492340833475704,
+      "avg_success_rate": 100.0
+    },
+    "resource_usage": {
+      "cpu": {
+        "avg": 63.11296296296296,
+        "max": 100.0,
+        "min": 0.0
+      },
+      "memory": {
+        "avg": 69.86944444444444,
+        "max": 71.8,
+        "min": 68.5
+      }
+    }
+  }
+}
